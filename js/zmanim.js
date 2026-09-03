@@ -112,16 +112,22 @@ function getShulZmanim(date) {
 }
 
 /* ===== ימים טובים (בישראל) - אין בהם מניין ותיקין ===== 
-   בחול המועד (סוכות/פסח) יש תפילת ותיקין כרגיל - הם לא כלולים ברשימה. */
+   בחול המועד (סוכות/פסח) יש תפילת ותיקין כרגיל - הם לא כלולים ברשימה.
+   בראש השנה וביום כיפור כן יש תפילה (בשעה קבועה - ראו FIXED_TEFILA_DAYS למטה),
+   ולכן הם לא כלולים ברשימה הזו. */
 const YOM_TOV_DAYS = [
-  { month: "Tishri", day: 1, name: "ראש השנה" },
-  { month: "Tishri", day: 2, name: "ראש השנה" },
-  { month: "Tishri", day: 10, name: "יום כיפור" },
   { month: "Tishri", day: 15, name: "סוכות" },
   { month: "Tishri", day: 22, name: "שמיני עצרת / שמחת תורה" },
   { month: "Nisan", day: 15, name: "פסח" },
   { month: "Nisan", day: 21, name: "שביעי של פסח" },
   { month: "Sivan", day: 6, name: "שבועות" },
+];
+
+/* ===== ימים עם תחילת תפילה בשעה קבועה (קורבנות) במקום 18 דק' לפני הנץ ===== */
+const FIXED_TEFILA_DAYS = [
+  { month: "Tishri", day: 1, time: "5:30", name: "ראש השנה" },
+  { month: "Tishri", day: 2, time: "5:30", name: "ראש השנה" },
+  { month: "Tishri", day: 10, time: "5:20", name: "יום כיפור" },
 ];
 
 const hebrewCivilFormatter = new Intl.DateTimeFormat("en-u-ca-hebrew", {
@@ -130,19 +136,28 @@ const hebrewCivilFormatter = new Intl.DateTimeFormat("en-u-ca-hebrew", {
   year: "numeric",
 });
 
-// מחזיר את פרטי היום: שבת ו/או יום טוב (שבהם אין מניין ותיקין)
+// מחזיר את פרטי היום: שבת, יום טוב (ללא ותיקין), ותפילה בשעה קבועה (אם יש)
 function getDayStatus(date) {
   const isShabbat = date.getDay() === 6;
   let yomTov = null;
+  let fixedTefila = null;
   try {
     const parts = hebrewCivilFormatter.formatToParts(date);
     const month = parts.find((p) => p.type === "month")?.value;
     const day = Number(parts.find((p) => p.type === "day")?.value);
     yomTov = YOM_TOV_DAYS.find((yt) => yt.month === month && yt.day === day) || null;
+    fixedTefila = FIXED_TEFILA_DAYS.find((ft) => ft.month === month && ft.day === day) || null;
   } catch (e) {
     yomTov = null;
+    fixedTefila = null;
   }
-  return { isShabbat, isYomTov: !!yomTov, yomTovName: yomTov ? yomTov.name : "" };
+  return {
+    isShabbat,
+    isYomTov: !!yomTov,
+    yomTovName: yomTov ? yomTov.name : "",
+    fixedTefilaTime: fixedTefila ? fixedTefila.time : null,
+    fixedTefilaName: fixedTefila ? fixedTefila.name : "",
+  };
 }
 
 function formatTime(date) {
@@ -184,14 +199,17 @@ function renderTodayCard() {
   if (!el) return;
   const now = new Date();
   const { hanetz, tefila } = getShulZmanim(now);
-  const { isShabbat, isYomTov, yomTovName } = getDayStatus(now);
+  const { isShabbat, isYomTov, yomTovName, fixedTefilaTime, fixedTefilaName } = getDayStatus(now);
   const noVatikin = isShabbat || isYomTov;
 
   el.querySelector(".date-line").textContent = formatGregorian(now);
   el.querySelector(".hebrew-date").textContent = formatHebrewDate(now);
   el.querySelector('[data-zman="hanetz"] .value').textContent = formatTime(hanetz);
   const tefilaEl = el.querySelector('[data-zman="tefila"] .value');
-  if (noVatikin) {
+  if (fixedTefilaTime) {
+    tefilaEl.textContent = `${fixedTefilaTime} - קורבנות (${fixedTefilaName})`;
+    tefilaEl.classList.remove("no-tefila");
+  } else if (noVatikin) {
     tefilaEl.textContent = `אין מניין ותיקין (${isYomTov ? yomTovName : "שבת"})`;
     tefilaEl.classList.add("no-tefila");
   } else {
@@ -229,17 +247,23 @@ function renderMonthTable() {
     const { hanetz, tefila } = getShulZmanim(date);
     const weekday = HEBREW_WEEKDAYS[date.getDay()];
     const isToday = isCurrentMonth && today.getDate() === d;
-    const { isShabbat, isYomTov, yomTovName } = getDayStatus(date);
+    const { isShabbat, isYomTov, yomTovName, fixedTefilaTime, fixedTefilaName } = getDayStatus(date);
     const noVatikin = isShabbat || isYomTov;
-    const classes = [isToday ? "today" : "", isShabbat ? "shabbat" : "", isYomTov ? "yom-tov" : ""]
+    const specialName = fixedTefilaTime ? fixedTefilaName : yomTovName;
+    const classes = [isToday ? "today" : "", isShabbat ? "shabbat" : "", (isYomTov || fixedTefilaTime) ? "yom-tov" : ""]
       .filter(Boolean)
       .join(" ");
-    const tefilaCell = noVatikin
-      ? `<span class="no-tefila" title="אין מניין ותיקין - ${isYomTov ? yomTovName : "שבת"}">אין ותיקין</span>`
-      : formatTime(tefila);
+    let tefilaCell;
+    if (fixedTefilaTime) {
+      tefilaCell = `<span title="קורבנות - ${fixedTefilaName}">${fixedTefilaTime}</span>`;
+    } else if (noVatikin) {
+      tefilaCell = `<span class="no-tefila" title="אין מניין ותיקין - ${isYomTov ? yomTovName : "שבת"}">אין ותיקין</span>`;
+    } else {
+      tefilaCell = formatTime(tefila);
+    }
     rows += `<tr class="${classes}">
       <td>${d} ${HEBREW_MONTHS[month]}</td>
-      <td>יום ${weekday}${isYomTov ? ` (${yomTovName})` : ""}</td>
+      <td>יום ${weekday}${specialName ? ` (${specialName})` : ""}</td>
       <td class="time">${formatTime(hanetz)}</td>
       <td class="time">${tefilaCell}</td>
     </tr>`;

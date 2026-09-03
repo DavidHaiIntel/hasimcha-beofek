@@ -1,6 +1,9 @@
 /* ===== חישוב זמני הנץ החמה (זריחה נראית) עבור נתיבות =====
-   שיטת החישוב מבוססת על נוסחאות NOAA הסטנדרטיות (Jean Meeus),
-   עם זנית 90.833° - התואם ל"זריחה הנראית" באתר chaitables.com. */
+   שיטת החישוב מבוססת על נוסחאות NOAA הסטנדרטיות (Jean Meeus).
+   הזנית כויל ידנית מול לוח "חי" (chaitables.com) בנתיבות, סוג לוח "זריחה נראית":
+   ב-21 באלול תשפ"ו לוח "חי" נותן הנץ 6:23, לעומת 90.833° (זריחה תיאורטית) שנותן 6:18-6:19.
+   הזנית 89.93° מיישרת את התוצאה שלנו ללוח "חי" (הפרש ~5 דק', כנראה עקב גובה אופק/שיטת חישוב שונה). */
+const SUNRISE_ZENITH = 89.93;
 
 const NETIVOT = {
   lat: 31.4231,
@@ -76,7 +79,7 @@ function calcSunTimes(year, month, day, lat, lon) {
         1.25 * e * e * Math.sin(2 * toRad(M))
     );
 
-  const zenith = 90.833; // זריחה/שקיעה נראית (כולל שבירה אטמוספרית וקוטר השמש)
+  const zenith = SUNRISE_ZENITH; // כויל מול לוח "חי" (ראו הערה בראש הקובץ)
   const cosHA =
     Math.cos(toRad(zenith)) / (Math.cos(toRad(lat)) * Math.cos(toRad(decl))) -
     Math.tan(toRad(lat)) * Math.tan(toRad(decl));

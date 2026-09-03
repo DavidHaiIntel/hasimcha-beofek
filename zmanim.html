@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>זמני תפילה - לוח הנץ החמה | השמחה שבאופק</title>
+<meta name="description" content="לוח זמנים חודשי של הנץ החמה ותחילת תפילת ותיקין בנתיבות.">
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html">
+      <img src="images/logo.png" alt="לוגו קהילת אוהב ישראל">
+      <div class="brand-text">
+        <h1>בית הכנסת השמחה שבאופק</h1>
+        <p>קהילת אוהב ישראל | נתיבות</p>
+      </div>
+    </a>
+    <button class="nav-toggle" aria-label="פתח תפריט">&#9776;</button>
+    <nav class="main-nav">
+      <a href="index.html">בית</a>
+      <a href="zmanim.html" class="active">זמני תפילה</a>
+      <a href="shabbat.html">שבת קודש</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container">
+      <h3>לוח זמני הנץ החמה - נתיבות</h3>
+      <p class="subtitle">הנץ החמה (זריחה נראית) ותחילת תפילת ותיקין (18 דק' לפני הנץ)</p>
+
+      <div class="month-nav">
+        <button id="prev-month" aria-label="חודש קודם">›</button>
+        <span class="current-month" id="current-month-label"></span>
+        <button id="next-month" aria-label="חודש הבא">‹</button>
+      </div>
+
+      <div class="zman-table-wrap">
+        <table class="zman-table">
+          <thead>
+            <tr>
+              <th>תאריך</th>
+              <th>יום</th>
+              <th>הנץ החמה</th>
+              <th>תחילת תפילה (הודו)</th>
+            </tr>
+          </thead>
+          <tbody id="zman-table-body">
+            <tr><td colspan="4">טוען...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note-box">
+        הזמנים מחושבים אוטומטית לפי מיקום נתיבות (זריחה נראית), ומתעדכנים בהתאם לשעון ישראל (כולל שעון קיץ).
+        השורה המסומנת בצבע היא היום הנוכחי, ושורות השבת מודגשות בזהב.
+        בשבתות ובימים טובים אין מניין ותיקין (בחול המועד יש תפילה כרגיל).
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p><strong>בית הכנסת "השמחה שבאופק"</strong> ומרכז קהילתי "אוהב ישראל"</p>
+    <p class="address">רח' קטיף 36, נתיבות</p>
+    <p>&copy; <span id="current-year"></span> קהילת אוהב ישראל</p>
+  </div>
+</footer>
+
+<script src="js/zmanim.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>

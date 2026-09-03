@@ -231,14 +231,26 @@ const GREGORIAN_MONTHS = [
   "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר",
 ];
 
-const hebrewDayMonthFormatter = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
-  day: "numeric",
+const hebrewMonthNameFormatter = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
   month: "long",
 });
 const hebrewMonthYearFormatter = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
   month: "long",
   year: "numeric",
 });
+
+// ממיר מספר (1-30) לאותיות עבריות (גימטריה), עם טיפול מיוחד ל-15/16
+function toHebrewNumeral(num) {
+  if (num === 15) return 'ט"ו';
+  if (num === 16) return 'ט"ז';
+  const ones = ["", "א", "ב", "ג", "ד", "ה", "ו", "ז", "ח", "ט"];
+  const tens = ["", "י", "כ", "ל"];
+  const t = Math.floor(num / 10);
+  const o = num % 10;
+  const str = (tens[t] || "") + (ones[o] || "");
+  if (str.length <= 1) return str + "׳"; // geresh
+  return str.slice(0, -1) + "״" + str.slice(-1); // gershayim
+}
 
 // מזהה חודש עברי (שנה+חודש) לפי Intl, עבור תאריך גרגוריאני נתון
 function getHebrewYM(date) {
@@ -305,8 +317,9 @@ function renderMonthTable() {
       tefilaCell = formatTime(tefila);
     }
     const gregorianDate = `${date.getDate()} ב${GREGORIAN_MONTHS[date.getMonth()]}`;
+    const hebrewDate = `${toHebrewNumeral(getHebrewYM(date).day)} ב${hebrewMonthNameFormatter.format(date)}`;
     rows += `<tr class="${classes}">
-      <td>${hebrewDayMonthFormatter.format(date)}${specialName ? ` (${specialName})` : ""}</td>
+      <td>${hebrewDate}${specialName ? ` (${specialName})` : ""}</td>
       <td>${gregorianDate}</td>
       <td>יום ${weekday}</td>
       <td class="time">${formatTime(hanetz)}</td>

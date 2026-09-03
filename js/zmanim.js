@@ -4,6 +4,8 @@
    ב-21 באלול תשפ"ו לוח "חי" נותן הנץ 6:23, לעומת 90.833° (זריחה תיאורטית) שנותן 6:18-6:19.
    הזנית 89.93° מיישרת את התוצאה שלנו ללוח "חי" (הפרש ~5 דק', כנראה עקב גובה אופק/שיטת חישוב שונה). */
 const SUNRISE_ZENITH = 89.93;
+// שקיעה לצורך כניסת/יציאת שבת ותפילות - זנית "אזרחית" סטנדרטית (שונה מכיול ההנץ למעלה)
+const SUNSET_ZENITH = 90.833;
 
 const NETIVOT = {
   lat: 31.4231,
@@ -83,15 +85,19 @@ function calcSunTimes(year, month, day, lat, lon) {
   const cosHA =
     Math.cos(toRad(zenith)) / (Math.cos(toRad(lat)) * Math.cos(toRad(decl))) -
     Math.tan(toRad(lat)) * Math.tan(toRad(decl));
+  const cosHASet =
+    Math.cos(toRad(SUNSET_ZENITH)) / (Math.cos(toRad(lat)) * Math.cos(toRad(decl))) -
+    Math.tan(toRad(lat)) * Math.tan(toRad(decl));
 
-  if (cosHA > 1 || cosHA < -1) {
+  if (cosHA > 1 || cosHA < -1 || cosHASet > 1 || cosHASet < -1) {
     return { sunrise: null, sunset: null };
   }
 
   const HA = toDeg(Math.acos(cosHA));
+  const HASet = toDeg(Math.acos(cosHASet));
   const solarNoonUTCmin = 720 - 4 * lon - eqTime;
   const sunriseUTCmin = solarNoonUTCmin - 4 * HA;
-  const sunsetUTCmin = solarNoonUTCmin + 4 * HA;
+  const sunsetUTCmin = solarNoonUTCmin + 4 * HASet;
 
   const midnightUTC = Date.UTC(year, month - 1, day, 0, 0, 0);
   return {
@@ -285,8 +291,98 @@ function initMonthNav() {
   });
 }
 
+/* ===== חישוב זמני שבת (כניסה/יציאה ותפילות) - עמוד shabbat.html =====
+   כללים (סוכמו מול הקהילה):
+   - כניסת שבת = שקיעת יום שישי פחות 10 דק'.
+   - צאת שבת = שקיעת יום שבת ועוד 45 דק'.
+   - שיר השירים = 10 דק' לפני מנחה של ערב שבת.
+   - מנחה/קבלת שבת (ערב שבת) = שקיעת יום שישי פחות 8 דק', מעוגל לרבע-שעה הקרוב ביותר של 5 דק'.
+   - שחרית של שבת = 8:30 בשעון קיץ, 8:00 בשעון חורף (קבוע, לא תלוי שקיעה).
+   - לימוד הורים וילדים = 45 דק' לפני מנחה של שבת.
+   - מנחה של שבת (צהריים) = בערך שעה לפני שקיעת יום שבת, מעוגל ל-15 דק' הקרובות.
+   - ערבית מוצ"ש = 8 דק' לפני צאת שבת (המוצג למעלה). */
+function roundToNearestMinutes(date, minutes) {
+  const ms = minutes * 60000;
+  return new Date(Math.round(date.getTime() / ms) * ms);
+}
+
+function isIsraelDST(date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: NETIVOT.timeZone,
+    timeZoneName: "shortOffset",
+  }).formatToParts(date);
+  const offset = parts.find((p) => p.type === "timeZoneName")?.value || "";
+  return offset.includes("+3");
+}
+
+// מוצא את יום שישי ושבת הקרובים (או של השבוע הנוכחי אם היום כבר שישי/שבת)
+function getShabbatDates(reference) {
+  const d = new Date(reference);
+  d.setHours(12, 0, 0, 0); // צהריים כדי להימנע מבעיות שינוי שעון
+  const dow = d.getDay(); // 0=ראשון ... 5=שישי, 6=שבת
+  let friday;
+  if (dow === 6) {
+    friday = new Date(d);
+    friday.setDate(d.getDate() - 1);
+  } else {
+    const daysUntilFriday = (5 - dow + 7) % 7;
+    friday = new Date(d);
+    friday.setDate(d.getDate() + daysUntilFriday);
+  }
+  const saturday = new Date(friday);
+  saturday.setDate(friday.getDate() + 1);
+  return { friday, saturday };
+}
+
+function calcShabbatTimes(reference = new Date()) {
+  const { friday, saturday } = getShabbatDates(reference);
+  const fridaySun = calcSunTimes(
+    friday.getFullYear(), friday.getMonth() + 1, friday.getDate(),
+    NETIVOT.lat, NETIVOT.lon
+  );
+  const saturdaySun = calcSunTimes(
+    saturday.getFullYear(), saturday.getMonth() + 1, saturday.getDate(),
+    NETIVOT.lat, NETIVOT.lon
+  );
+  if (!fridaySun.sunset || !saturdaySun.sunset) return null;
+
+  const candleLighting = new Date(fridaySun.sunset.getTime() - 10 * 60000);
+  const shabbatEnds = new Date(saturdaySun.sunset.getTime() + 45 * 60000);
+  const minchaErev = roundToNearestMinutes(
+    new Date(fridaySun.sunset.getTime() - 8 * 60000), 5
+  );
+  const shirHashirim = new Date(minchaErev.getTime() - 10 * 60000);
+  const shacharit = isIsraelDST(saturday) ? "8:30" : "8:00";
+  const minchaShabbat = roundToNearestMinutes(
+    new Date(saturdaySun.sunset.getTime() - 60 * 60000), 15
+  );
+  const limudHorim = new Date(minchaShabbat.getTime() - 45 * 60000);
+  const arvitMotzash = new Date(shabbatEnds.getTime() - 8 * 60000);
+
+  return {
+    candleLighting, shabbatEnds, shirHashirim, minchaErev,
+    shacharit, limudHorim, minchaShabbat, arvitMotzash,
+  };
+}
+
+function renderShabbatTimes() {
+  const el = document.getElementById("candle-time");
+  if (!el) return; // לא בעמוד שבת
+  const t = calcShabbatTimes();
+  if (!t) return;
+  document.getElementById("candle-time").textContent = formatTime(t.candleLighting);
+  document.getElementById("shabbat-end-time").textContent = formatTime(t.shabbatEnds);
+  document.getElementById("shir-hashirim-time").textContent = formatTime(t.shirHashirim);
+  document.getElementById("mincha-erev-time").textContent = formatTime(t.minchaErev);
+  document.getElementById("shacharit-time").textContent = t.shacharit;
+  document.getElementById("limud-horim-time").textContent = formatTime(t.limudHorim);
+  document.getElementById("mincha-shabbat-time").textContent = formatTime(t.minchaShabbat);
+  document.getElementById("arvit-motzash-time").textContent = formatTime(t.arvitMotzash);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayCard();
   renderMonthTable();
   initMonthNav();
+  renderShabbatTimes();
 });

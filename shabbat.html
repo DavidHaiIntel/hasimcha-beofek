@@ -40,8 +40,8 @@
         <div class="parasha-header">
           <h3>שבת פרשת כי תבוא</h3>
           <div class="candle-times">
-            <span>כניסת שבת: <span class="value">18:52</span></span>
-            <span>צאת שבת: <span class="value">19:47</span></span>
+            <span>כניסת שבת: <span class="value" id="candle-time">18:52</span></span>
+            <span>צאת שבת: <span class="value" id="shabbat-end-time">19:47</span></span>
           </div>
         </div>
 
@@ -49,12 +49,12 @@
           <div class="col">
             <h4>זמני תפילות שבת</h4>
             <ul class="shabbat-list">
-              <li><span>שיר השירים</span><span class="time">18:45</span></li>
-              <li><span>תפילת מנחה, קבלת שבת וערבית</span><span class="time">18:55</span></li>
-              <li><span>שחרית של שבת</span><span class="time">8:30</span></li>
-              <li><span>לימוד הורים וילדים</span><span class="time">17:45</span></li>
-              <li><span>מנחה של שבת</span><span class="time">18:30</span></li>
-              <li><span>ערבית וצאת שבת</span><span class="time">19:39</span></li>
+              <li><span>שיר השירים</span><span class="time" id="shir-hashirim-time">18:45</span></li>
+              <li><span>תפילת מנחה, קבלת שבת וערבית</span><span class="time" id="mincha-erev-time">18:55</span></li>
+              <li><span>שחרית של שבת</span><span class="time" id="shacharit-time">8:30</span></li>
+              <li><span>לימוד הורים וילדים</span><span class="time" id="limud-horim-time">17:45</span></li>
+              <li><span>מנחה של שבת</span><span class="time" id="mincha-shabbat-time">18:30</span></li>
+              <li><span>ערבית וצאת שבת</span><span class="time" id="arvit-motzash-time">19:39</span></li>
             </ul>
           </div>
           <div class="col">
@@ -83,8 +83,8 @@
       <!-- סוף מקטע העדכון השבועי -->
 
       <div class="note-box" style="max-width:760px;margin-inline:auto;">
-        טיפ לעדכון: זמני "תפילת ותיקין (הודו)" בימי החול מתעדכנים אוטומטית בעמוד
-        <a href="zmanim.html">זמני תפילה</a>. את שעות כניסת/יציאת השבת והתוכן השבועי יש לעדכן ידנית בקובץ
+        טיפ לעדכון: כל שעות השבת (כניסה/יציאה, מנחות, שיר השירים, שחרית ולימוד) מתעדכנות אוטומטית לפי חישוב השקיעה בנתיבות.
+        את שם הפרשה, שעות השיעורים ופרטי התוכן השבועי יש לעדכן ידנית בקובץ
         <code>shabbat.html</code> מדי שבוע.
       </div>
     </div>
@@ -99,6 +99,7 @@
   </div>
 </footer>
 
+<script src="js/zmanim.js"></script>
 <script src="js/common.js"></script>
 </body>
 </html>

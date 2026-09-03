@@ -295,13 +295,12 @@ function renderMonthTable() {
   label.textContent = hebrewMonthYearFormatter.format(currentHebrewMonthStart);
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
   let rows = "";
   for (const date of days) {
     const { hanetz, tefila } = getShulZmanim(date);
     const weekday = HEBREW_WEEKDAYS[date.getDay()];
-    const isToday = date.getTime() === today.getTime();
+    const isToday = date.toDateString() === today.toDateString();
     const { isShabbat, isYomTov, yomTovName, fixedTefilaTime, fixedTefilaName } = getDayStatus(date);
     const noVatikin = isShabbat || isYomTov;
     const specialName = fixedTefilaTime ? fixedTefilaName : yomTovName;
@@ -442,4 +441,9 @@ document.addEventListener("DOMContentLoaded", () => {
   renderMonthTable();
   initMonthNav();
   renderShabbatTimes();
+  // בעמוד לוח הזמנים החודשי - למקד את הגלילה על שורת "היום" בטעינה הראשונית
+  const todayRow = document.querySelector("#zman-table-body tr.today");
+  if (todayRow) {
+    todayRow.scrollIntoView({ block: "center" });
+  }
 });

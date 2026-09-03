@@ -224,35 +224,72 @@ function renderTodayCard() {
   }
 }
 
-/* ===== רינדור בעמוד "זמני תפילה": טבלה חודשית ===== */
+/* ===== רינדור בעמוד "זמני תפילה": טבלה חודשית (לפי חודש עברי) ===== */
 const HEBREW_WEEKDAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
-const HEBREW_MONTHS = [
+const GREGORIAN_MONTHS = [
   "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני",
   "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר",
 ];
 
-let currentMonthView = new Date();
+const hebrewDayMonthFormatter = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
+  day: "numeric",
+  month: "long",
+});
+const hebrewMonthYearFormatter = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
+  month: "long",
+  year: "numeric",
+});
+
+// מזהה חודש עברי (שנה+חודש) לפי Intl, עבור תאריך גרגוריאני נתון
+function getHebrewYM(date) {
+  const parts = hebrewCivilFormatter.formatToParts(date);
+  return {
+    day: Number(parts.find((p) => p.type === "day")?.value),
+    month: parts.find((p) => p.type === "month")?.value,
+    year: Number(parts.find((p) => p.type === "year")?.value),
+  };
+}
+
+// מוצא את היום הראשון (יום א') של החודש העברי שבו נופל התאריך הנתון
+function findHebrewMonthStart(date) {
+  const { day } = getHebrewYM(date);
+  const start = new Date(date);
+  start.setDate(start.getDate() - (day - 1));
+  return start;
+}
+
+// מחזיר את כל התאריכים הגרגוריאניים של חודש עברי נתון, לפי תאריך תחילתו
+function getHebrewMonthDays(monthStart) {
+  const ym0 = getHebrewYM(monthStart);
+  const days = [];
+  const d = new Date(monthStart);
+  while (true) {
+    const ym = getHebrewYM(d);
+    if (ym.month !== ym0.month || ym.year !== ym0.year) break;
+    days.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return days;
+}
+
+let currentHebrewMonthStart = findHebrewMonthStart(new Date());
 
 function renderMonthTable() {
   const wrap = document.getElementById("zman-table-body");
   const label = document.getElementById("current-month-label");
   if (!wrap || !label) return;
 
-  const year = currentMonthView.getFullYear();
-  const month = currentMonthView.getMonth(); // 0-11
-  label.textContent = `${HEBREW_MONTHS[month]} ${year}`;
+  const days = getHebrewMonthDays(currentHebrewMonthStart);
+  label.textContent = hebrewMonthYearFormatter.format(currentHebrewMonthStart);
 
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = new Date();
-  const isCurrentMonth =
-    today.getFullYear() === year && today.getMonth() === month;
+  today.setHours(0, 0, 0, 0);
 
   let rows = "";
-  for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(year, month, d);
+  for (const date of days) {
     const { hanetz, tefila } = getShulZmanim(date);
     const weekday = HEBREW_WEEKDAYS[date.getDay()];
-    const isToday = isCurrentMonth && today.getDate() === d;
+    const isToday = date.getTime() === today.getTime();
     const { isShabbat, isYomTov, yomTovName, fixedTefilaTime, fixedTefilaName } = getDayStatus(date);
     const noVatikin = isShabbat || isYomTov;
     const specialName = fixedTefilaTime ? fixedTefilaName : yomTovName;
@@ -267,9 +304,11 @@ function renderMonthTable() {
     } else {
       tefilaCell = formatTime(tefila);
     }
+    const gregorianDate = `${date.getDate()} ב${GREGORIAN_MONTHS[date.getMonth()]}`;
     rows += `<tr class="${classes}">
-      <td>${d} ${HEBREW_MONTHS[month]}</td>
-      <td>יום ${weekday}${specialName ? ` (${specialName})` : ""}</td>
+      <td>${hebrewDayMonthFormatter.format(date)}${specialName ? ` (${specialName})` : ""}</td>
+      <td>${gregorianDate}</td>
+      <td>יום ${weekday}</td>
       <td class="time">${formatTime(hanetz)}</td>
       <td class="time">${tefilaCell}</td>
     </tr>`;
@@ -282,11 +321,16 @@ function initMonthNav() {
   const nextBtn = document.getElementById("next-month");
   if (!prevBtn || !nextBtn) return;
   prevBtn.addEventListener("click", () => {
-    currentMonthView.setMonth(currentMonthView.getMonth() - 1);
+    const prevMonthLastDay = new Date(currentHebrewMonthStart);
+    prevMonthLastDay.setDate(prevMonthLastDay.getDate() - 1);
+    currentHebrewMonthStart = findHebrewMonthStart(prevMonthLastDay);
     renderMonthTable();
   });
   nextBtn.addEventListener("click", () => {
-    currentMonthView.setMonth(currentMonthView.getMonth() + 1);
+    const days = getHebrewMonthDays(currentHebrewMonthStart);
+    const nextStart = days[days.length - 1];
+    nextStart.setDate(nextStart.getDate() + 1);
+    currentHebrewMonthStart = nextStart;
     renderMonthTable();
   });
 }

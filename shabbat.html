@@ -36,7 +36,20 @@
     <div class="container">
 
       <!-- לעדכון שבועי: יש לערוך את הטקסטים והשעות במקטע הזה בלבד -->
-      <div class="shabbat-poster">
+      <div class="shabbat-poster" id="shabbat-poster">
+        <div class="poster-deco" aria-hidden="true">
+          <img src="images/logo.png" alt="" class="poster-logo">
+          <svg class="poster-mandala" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" stroke="#3fa9a4" fill="none" stroke-width="1">
+            <circle cx="100" cy="100" r="90" stroke-dasharray="4 6"/>
+            <circle cx="100" cy="100" r="70"/>
+            <circle cx="100" cy="100" r="50" stroke-dasharray="2 5"/>
+            <circle cx="100" cy="100" r="30"/>
+            <g stroke="#c9a24d">
+              <path d="M100 10 L100 190 M10 100 L190 100"/>
+              <path d="M35 35 L165 165 M35 165 L165 35"/>
+            </g>
+          </svg>
+        </div>
         <div class="parasha-header">
           <h3>שבת פרשת כי תבוא</h3>
           <div class="candle-times">
@@ -82,7 +95,11 @@
       </div>
       <!-- סוף מקטע העדכון השבועי -->
 
-      <div class="note-box" style="max-width:760px;margin-inline:auto;">
+      <div class="print-btn-wrap no-print">
+        <button id="print-shabbat-btn" class="btn outline">🖨️ הדפסת לוז שבת</button>
+      </div>
+
+      <div class="note-box no-print" style="max-width:760px;margin-inline:auto;">
         טיפ לעדכון: כל שעות השבת (כניסה/יציאה, מנחות, שיר השירים, שחרית ולימוד) מתעדכנות אוטומטית לפי חישוב השקיעה בנתיבות.
         את שם הפרשה, שעות השיעורים ופרטי התוכן השבועי יש לעדכן ידנית בקובץ
         <code>shabbat.html</code> מדי שבוע.
@@ -102,5 +119,8 @@
 <script src="js/netz-data.js"></script>
 <script src="js/zmanim.js"></script>
 <script src="js/common.js"></script>
+<script>
+  document.getElementById("print-shabbat-btn").addEventListener("click", () => window.print());
+</script>
 </body>
 </html>

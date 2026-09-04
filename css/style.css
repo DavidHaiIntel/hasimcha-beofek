@@ -413,6 +413,32 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
   font-size: 0.95rem;
 }
 
+.shabbat-poster {
+  position: relative;
+}
+.poster-deco {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 24px 0;
+}
+.poster-deco .poster-logo { height: 70px; width: auto; order: 2; }
+.poster-deco .poster-mandala { width: 90px; height: 90px; opacity: 0.6; order: 1; }
+
+.print-btn-wrap { max-width: 760px; margin: 18px auto 0; text-align: center; }
+
+@media print {
+  .no-print, .site-header, .site-footer, .print-btn-wrap { display: none !important; }
+  body { background: #fff; }
+  main .section { padding: 0; }
+  .shabbat-poster {
+    box-shadow: none;
+    max-width: 100%;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 @media (max-width: 640px) {
   .shabbat-cols { grid-template-columns: 1fr; }
   .shabbat-cols .col:first-child { border-left: none; border-right: none; border-bottom: 1px solid #eef3f6; }

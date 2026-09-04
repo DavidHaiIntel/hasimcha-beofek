@@ -168,7 +168,9 @@ function getDayStatus(date) {
 
 function formatTime(date) {
   if (!date) return "--:--";
-  return date.toLocaleTimeString("he-IL", {
+  // מעגל לדקה הקרובה ביותר (במקום לחתוך) - כדי להתאים ללוחות ציבוריים כמו לוח "חי"
+  const rounded = new Date(Math.round(date.getTime() / 60000) * 60000);
+  return rounded.toLocaleTimeString("he-IL", {
     timeZone: NETIVOT.timeZone,
     hour: "2-digit",
     minute: "2-digit",

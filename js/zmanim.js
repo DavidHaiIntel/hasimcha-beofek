@@ -480,12 +480,52 @@ async function renderParashaName() {
   }
 }
 
+// מוצא את יום א' בתשרי (ראש השנה) הרלוונטי הבא - החל מהיום, ולא ראש השנה שכבר עבר
+function findRelevantTishreiStart(reference = new Date()) {
+  const d = new Date(reference);
+  for (let i = 0; i < 400; i++) {
+    const ym = getHebrewYM(d);
+    if (ym.month === "Tishri" && ym.day === 1) return new Date(d);
+    d.setDate(d.getDate() + 1);
+  }
+  return null;
+}
+
+// מרנדר את זמני הנץ המדויקים לכל יום מחול המועד סוכות (ט"ז-כ"א בתשרי) בעמוד sukkot.html
+function renderSukkotNetzTable() {
+  const wrap = document.getElementById("sukkot-netz-table");
+  if (!wrap) return; // לא בעמוד סוכות
+  const tishreiStart = findRelevantTishreiStart();
+  if (!tishreiStart) return;
+
+  const today = new Date();
+  let rows = "";
+  for (let day = 16; day <= 21; day++) {
+    const date = new Date(tishreiStart);
+    date.setDate(date.getDate() + (day - 1));
+    const { hanetz } = getShulZmanim(date);
+    const isToday = date.toDateString() === today.toDateString();
+    const gregorian = `${date.getDate()} ב${GREGORIAN_MONTHS[date.getMonth()]}`;
+    rows += `<tr class="${isToday ? "today" : ""}">
+      <td>${toHebrewNumeral(day)} בתשרי</td>
+      <td>${gregorian}</td>
+      <td class="time">${formatTime(hanetz)}</td>
+    </tr>`;
+  }
+  wrap.innerHTML = `
+    <table class="zman-table" style="max-width:500px; margin:14px auto 0;">
+      <thead><tr><th>תאריך עברי</th><th>תאריך לועזי</th><th>הנץ החמה</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayCard();
   renderMonthTable();
   initMonthNav();
   renderShabbatTimes();
   renderParashaName();
+  renderSukkotNetzTable();
   // בעמוד לוח הזמנים החודשי - למקד את הגלילה על שורת "היום" בטעינה הראשונית
   const todayRow = document.querySelector("#zman-table-body tr.today");
   if (todayRow) {

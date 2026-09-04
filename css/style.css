@@ -495,6 +495,24 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
 .site-footer .admin-link { margin-top: 10px; font-size: 0.78rem; opacity: 0.6; }
 .site-footer .admin-link a { color: inherit; text-decoration: underline; }
 
+.whatsapp-share-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 500;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #25d366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  transition: transform 0.15s ease;
+}
+.whatsapp-share-btn:hover { transform: scale(1.08); }
+@media print { .whatsapp-share-btn { display: none !important; } }
+
 /* ===== Mobile ===== */
 @media (max-width: 780px) {
   .nav-toggle { display: block; }

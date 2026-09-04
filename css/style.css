@@ -364,9 +364,12 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
   background: linear-gradient(180deg, #dff1ee, #ffffff);
 }
 .shabbat-poster .parasha-header h3 {
-  margin: 0 0 6px;
+  margin: 0 0 10px;
   color: var(--color-navy-dark);
   font-size: 1.8rem;
+  display: inline-block;
+  padding-bottom: 8px;
+  border-bottom: 3px solid var(--color-navy);
 }
 .shabbat-poster .candle-times {
   display: flex;
@@ -379,12 +382,22 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
 
 .shabbat-cols {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr auto 1fr;
   gap: 0;
+  align-items: stretch;
 }
 .shabbat-cols .col { padding: 24px 28px; }
-.shabbat-cols .col:first-child { border-left: 1px solid #eef3f6; }
-[dir="rtl"] .shabbat-cols .col:first-child { border-left: none; border-right: 1px solid #eef3f6; }
+.col-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 14px;
+}
+.col-divider .ornament-tip { font-size: 1.1rem; line-height: 1; }
+.col-divider .divider-line { width: 1px; flex: 1; min-height: 30px; background: #cfe0e0; }
+.col-divider .divider-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-teal); }
 .shabbat-cols h4 {
   color: var(--color-teal);
   margin: 0 0 14px;
@@ -412,6 +425,13 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
   padding: 16px;
   font-size: 0.95rem;
 }
+.shabbat-shalom {
+  text-align: center;
+  padding: 14px 16px 22px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-navy-dark);
+}
 
 .shabbat-poster {
   position: relative;
@@ -420,15 +440,18 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 18px 24px 0;
+  padding: 10px 24px 0;
+  margin-bottom: -30px;
+  position: relative;
+  z-index: 1;
 }
-.poster-deco .poster-logo { height: 70px; width: auto; order: 2; }
-.poster-deco .poster-mandala { width: 90px; height: 90px; opacity: 0.6; order: 1; }
+.poster-deco .poster-logo { height: 60px; width: auto; order: 2; }
+.poster-deco .poster-mandala { width: 130px; height: 130px; opacity: 0.5; order: 1; margin-top: -20px; }
 
 .print-btn-wrap { max-width: 760px; margin: 18px auto 0; text-align: center; }
 
 @media print {
-  @page { size: landscape; margin: 10mm; }
+  @page { size: landscape; margin: 8mm; }
   .no-print, .site-header, .site-footer, .print-btn-wrap { display: none !important; }
   body { background: #fff; }
   main .section { padding: 0; }
@@ -437,18 +460,20 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
     box-shadow: none;
     max-width: 100%;
     width: 100%;
+    page-break-inside: avoid;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .shabbat-poster .parasha-header h3 { font-size: 2.2rem; }
-  .shabbat-cols { font-size: 1.15rem; }
-  .poster-deco .poster-logo { height: 90px; }
-  .poster-deco .poster-mandala { width: 110px; height: 110px; }
+  .shabbat-poster .parasha-header { padding: 14px 20px 10px; }
+  .shabbat-cols .col { padding: 14px 22px; }
+  .shabbat-list li { padding: 5px 0; }
+  .shabbat-shalom { padding: 10px 16px 14px; font-size: 1.3rem; }
 }
 
 @media (max-width: 640px) {
   .shabbat-cols { grid-template-columns: 1fr; }
-  .shabbat-cols .col:first-child { border-left: none; border-right: none; border-bottom: 1px solid #eef3f6; }
+  .col-divider { flex-direction: row; padding: 6px 0; }
+  .col-divider .divider-line { width: auto; height: 1px; flex: 1; min-height: 0; }
 }
 
 /* ===== Footer ===== */

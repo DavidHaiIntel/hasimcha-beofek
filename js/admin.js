@@ -70,6 +70,66 @@ async function fetchLiveShabbatHtml() {
   return resp.text();
 }
 
+async function fetchLiveSiteConfigJs() {
+  const resp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/site-config.js?t=${Date.now()}`
+  );
+  if (!resp.ok) throw new Error("לא הצלחתי לטעון את הגדרות האתר מ-GitHub");
+  return resp.text();
+}
+
+function parseExtraPagesFromJs(jsText) {
+  const match = jsText.match(/extraPages:\s*(\[[\s\S]*?\])\s*,?\s*\};/);
+  if (!match) return [];
+  try {
+    // eslint-disable-next-line no-new-func
+    return Function(`"use strict"; return (${match[1]});`)();
+  } catch (e) {
+    return [];
+  }
+}
+
+function renderExtraPagesForm(pages) {
+  const container = document.getElementById("extra-pages-rows");
+  container.innerHTML = "";
+  pages.forEach((p) => {
+    const row = document.createElement("div");
+    row.className = "extra-page-row";
+    row.dataset.key = p.key;
+    row.dataset.url = p.url;
+    row.innerHTML = `
+      <input type="checkbox" class="extra-page-enabled" id="extra-${p.key}" ${p.enabled ? "checked" : ""}>
+      <label for="extra-${p.key}">${p.label} (${p.url})</label>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function getExtraPagesFromForm() {
+  return Array.from(document.querySelectorAll("#extra-pages-rows .extra-page-row")).map((row) => ({
+    key: row.dataset.key,
+    url: row.dataset.url,
+    label: row.querySelector("label").textContent.replace(/\s*\([^)]*\)\s*$/, ""),
+    enabled: row.querySelector(".extra-page-enabled").checked,
+  }));
+}
+
+function buildSiteConfigJs(pages) {
+  const list = pages
+    .map((p) => `    { key: "${p.key}", label: "${p.label}", url: "${p.url}", enabled: ${p.enabled} },`)
+    .join("\n");
+  return `/* ===== הגדרות אתר - אילו "דפים נוספים" (זמניים/עונתיים) פעילים כרגע =====
+   הדפים הקבועים (בית / זמני תפילה / שבת קודש) תמיד מוצגים ולא ניתנים לכיבוי.
+   דפים נוספים (כמו לימוד סוכות) אפשר להדליק/לכבות מעמוד הניהול (admin.html) -
+   כשדף כבוי, הקישור אליו נעלם מהניווט בכל האתר, והדף עצמו מציג הודעה במקום התוכן. */
+const SITE_CONFIG = {
+  extraPages: [
+${list}
+  ],
+};
+`;
+}
+
 async function loadIntoForm() {
   const html = await fetchLiveShabbatHtml();
   document.getElementById("parasha-title-input").value = parseTitleFromHtml(html);
@@ -79,6 +139,9 @@ async function loadIntoForm() {
 
   document.getElementById("shiurim-rows").innerHTML = "";
   parseListFromHtml(html, "shiurim-list").forEach((r) => addRow("shiurim-rows", r.label, r.time));
+
+  const configJs = await fetchLiveSiteConfigJs();
+  renderExtraPagesForm(parseExtraPagesFromJs(configJs));
 }
 
 function showMsg(text, ok) {
@@ -97,48 +160,68 @@ async function saveToGithub() {
   showMsg("שומר...", true);
 
   try {
-    const currentHtml = await fetchLiveShabbatHtml();
-
-    const newTitle = document.getElementById("parasha-title-input").value.trim();
-    const newWeekdayList = buildListHtml("weekday-list", getRows("weekday-rows"));
-    const newShiurimList = buildListHtml("shiurim-list", getRows("shiurim-rows"));
-
-    let updated = currentHtml
-      .replace(/<h3 id="parasha-title">[\s\S]*?<\/h3>/, `<h3 id="parasha-title">${newTitle}</h3>`)
-      .replace(/<ul class="shabbat-list" id="weekday-list">[\s\S]*?<\/ul>/, newWeekdayList)
-      .replace(/<ul class="shabbat-list" id="shiurim-list">[\s\S]*?<\/ul>/, newShiurimList);
-
-    // מביאים את ה-SHA הנוכחי של הקובץ (נדרש ע"י GitHub API לעדכון קובץ קיים)
-    const metaResp = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}?ref=${GH_BRANCH}`,
-      { headers: { Authorization: `token ${token}` } }
+    await saveFileToGithub(
+      GH_FILE_PATH,
+      (currentHtml) => {
+        const newTitle = document.getElementById("parasha-title-input").value.trim();
+        const newWeekdayList = buildListHtml("weekday-list", getRows("weekday-rows"));
+        const newShiurimList = buildListHtml("shiurim-list", getRows("shiurim-rows"));
+        return currentHtml
+          .replace(/<h3 id="parasha-title">[\s\S]*?<\/h3>/, `<h3 id="parasha-title">${newTitle}</h3>`)
+          .replace(/<ul class="shabbat-list" id="weekday-list">[\s\S]*?<\/ul>/, newWeekdayList)
+          .replace(/<ul class="shabbat-list" id="shiurim-list">[\s\S]*?<\/ul>/, newShiurimList);
+      },
+      `עדכון לוז שבת`,
+      token
     );
-    if (!metaResp.ok) throw new Error("לא הצלחתי לקרוא את פרטי הקובץ מ-GitHub (בדוק את הטוקן)");
-    const meta = await metaResp.json();
 
-    const putResp = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `token ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: `עדכון לוז שבת: ${newTitle}`,
-          content: b64EncodeUnicode(updated),
-          sha: meta.sha,
-          branch: GH_BRANCH,
-        }),
-      }
+    await saveFileToGithub(
+      "js/site-config.js",
+      () => buildSiteConfigJs(getExtraPagesFromForm()),
+      `עדכון הגדרות דפים נוספים`,
+      token
     );
-    if (!putResp.ok) {
-      const err = await putResp.json().catch(() => ({}));
-      throw new Error(err.message || "השמירה נכשלה");
-    }
+
     showMsg("נשמר ופורסם בהצלחה! האתר יתעדכן תוך דקה-שתיים.", true);
   } catch (e) {
     showMsg("שגיאה: " + e.message, false);
+  }
+}
+
+async function saveFileToGithub(path, transform, commitMessage, token) {
+  const rawResp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${path}?t=${Date.now()}`
+  );
+  if (!rawResp.ok) throw new Error(`לא הצלחתי לטעון את ${path}`);
+  const current = await rawResp.text();
+  const updated = transform(current);
+
+  const metaResp = await fetch(
+    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}`,
+    { headers: { Authorization: `token ${token}` } }
+  );
+  if (!metaResp.ok) throw new Error(`לא הצלחתי לקרוא את פרטי ${path} מ-GitHub (בדוק את הטוקן)`);
+  const meta = await metaResp.json();
+
+  const putResp = await fetch(
+    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `token ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: commitMessage,
+        content: b64EncodeUnicode(updated),
+        sha: meta.sha,
+        branch: GH_BRANCH,
+      }),
+    }
+  );
+  if (!putResp.ok) {
+    const err = await putResp.json().catch(() => ({}));
+    throw new Error(err.message || `השמירה של ${path} נכשלה`);
   }
 }
 

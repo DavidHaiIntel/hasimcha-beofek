@@ -8,6 +8,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const yearEl = document.getElementById("current-year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+  // הסתרת קישורים (בניווט וגם כרטיסי "עוד באתר") לדפים נוספים שכובו מעמוד הניהול
+  if (typeof SITE_CONFIG !== "undefined") {
+    const currentPage = location.pathname.split("/").pop();
+    SITE_CONFIG.extraPages.forEach((p) => {
+      if (!p.enabled) {
+        document.querySelectorAll(`a[href="${p.url}"]`).forEach((a) => {
+          const card = a.closest(".info-card");
+          (card || a).remove();
+        });
+        if (currentPage === p.url) {
+          const main = document.querySelector("main");
+          if (main) {
+            main.innerHTML = `
+              <section class="section">
+                <div class="container" style="text-align:center; padding: 60px 20px;">
+                  <h3>הפעילות "${p.label}" אינה פעילה כרגע</h3>
+                  <p class="subtitle"><a href="index.html">חזרה לדף הבית</a></p>
+                </div>
+              </section>`;
+          }
+        }
+      }
+    });
+  }
+
   // כפתור שיתוף בוואטסאפ צף (בכל עמוד ציבורי, לא בעמוד הניהול)
   if (!location.pathname.includes("admin.html")) {
     const text = encodeURIComponent(document.title + " - " + location.href);

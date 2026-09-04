@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ניהול לוז שבת | השמחה שבאופק</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .admin-box { max-width: 640px; margin: 40px auto; }
+  .admin-field { margin-bottom: 14px; }
+  .admin-field label { display: block; font-weight: 600; margin-bottom: 4px; color: var(--color-navy-dark); }
+  .admin-field input[type="text"], .admin-field input[type="password"] {
+    width: 100%; padding: 10px 12px; border: 1px solid #d5dee2; border-radius: 8px; font-size: 1rem;
+    font-family: inherit; box-sizing: border-box;
+  }
+  .admin-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .admin-row input { padding: 8px 10px; border: 1px solid #d5dee2; border-radius: 6px; font-family: inherit; }
+  .admin-row button { background: #f4dede; color: #a33; border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; }
+  .admin-add-btn { background: #eef6f4; color: var(--color-teal); border: 1px solid var(--color-teal); border-radius: 8px; padding: 8px 14px; cursor: pointer; margin-bottom: 18px; }
+  .admin-msg { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-size: 0.95rem; }
+  .admin-msg.ok { background: #e7f6ee; color: #1f7a4a; }
+  .admin-msg.err { background: #fbe9e9; color: #a33; }
+  .admin-help { font-size: 0.85rem; color: #6b7a80; margin-top: 4px; }
+  fieldset { border: 1px solid #e0e6e8; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  legend { padding: 0 8px; font-weight: 700; color: var(--color-teal); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html">
+      <img src="images/logo.png" alt="לוגו קהילת אוהב ישראל">
+      <div class="brand-text">
+        <h1>בית הכנסת השמחה שבאופק</h1>
+        <p>קהילת אוהב ישראל | נתיבות</p>
+      </div>
+    </a>
+    <button class="nav-toggle" aria-label="פתח תפריט">&#9776;</button>
+    <nav class="main-nav">
+      <a href="index.html">בית</a>
+      <a href="zmanim.html">זמני תפילה</a>
+      <a href="shabbat.html">שבת קודש</a>
+      <a href="sukkot.html">לימוד סוכות</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container admin-box">
+
+      <div id="login-screen">
+        <h3>כניסת מנהלים</h3>
+        <p class="subtitle">עדכון לוז השבת (פרשה, שיעורים, תפילות ימי חול)</p>
+        <div class="admin-field">
+          <label for="admin-password">סיסמה</label>
+          <input type="password" id="admin-password" autocomplete="off">
+        </div>
+        <button class="btn" id="login-btn">כניסה</button>
+        <div id="login-error" class="admin-msg err" style="display:none;">סיסמה שגויה</div>
+      </div>
+
+      <div id="editor-screen" style="display:none;">
+        <h3>עריכת לוז שבת</h3>
+        <p class="subtitle">השינויים נשמרים ומתפרסמים ישירות באתר החי (דרך GitHub)</p>
+
+        <fieldset>
+          <legend>חיבור ל-GitHub</legend>
+          <div class="admin-field">
+            <label for="gh-token">Personal Access Token (עם הרשאת repo)</label>
+            <input type="password" id="gh-token" autocomplete="off" placeholder="ghp_...">
+            <div class="admin-help">
+              נדרש רק כדי לשמור בפועל לאתר. ליצירת טוקן: github.com/settings/tokens → Generate new token (classic) →
+              סמן הרשאת "repo". הטוקן נשמר רק בדפדפן שלך לזמן הביקור (לא נשלח לשום מקום חוץ מ-GitHub).
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>כותרת השבת</legend>
+          <div class="admin-field">
+            <label for="parasha-title-input">שם הפרשה (למשל: שבת פרשת ניצבים-וילך)</label>
+            <input type="text" id="parasha-title-input">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>תפילות ימי חול</legend>
+          <div id="weekday-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="weekday-rows">+ הוסף שורה</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>שיעורים במהלך השבוע</legend>
+          <div id="shiurim-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="shiurim-rows">+ הוסף שורה</button>
+        </fieldset>
+
+        <button class="btn" id="save-btn">שמור ופרסם באתר</button>
+        <button class="btn outline" id="reload-btn" type="button">טען מחדש מהאתר החי</button>
+        <div id="save-msg" style="display:none;"></div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p><strong>בית הכנסת "השמחה שבאופק"</strong> ומרכז קהילתי "אוהב ישראל"</p>
+    <p class="address">רח' קטיף 36, נתיבות</p>
+    <p>&copy; <span id="current-year"></span> קהילת אוהב ישראל</p>
+  </div>
+</footer>
+
+<script src="js/common.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

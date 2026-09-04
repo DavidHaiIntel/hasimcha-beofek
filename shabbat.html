@@ -27,6 +27,7 @@
       <a href="index.html">בית</a>
       <a href="zmanim.html">זמני תפילה</a>
       <a href="shabbat.html" class="active">שבת קודש</a>
+      <a href="sukkot.html">לימוד סוכות</a>
     </nav>
   </div>
 </header>
@@ -51,7 +52,7 @@
           </svg>
         </div>
         <div class="parasha-header">
-          <h3>שבת פרשת כי תבוא</h3>
+          <h3 id="parasha-title">שבת פרשת כי תבוא</h3>
           <div class="candle-times">
             <span>כניסת שבת: <span class="value" id="candle-time">18:52</span></span>
             <span>צאת שבת: <span class="value" id="shabbat-end-time">19:47</span></span>
@@ -72,7 +73,7 @@
           </div>
           <div class="col">
             <h4>תפילות ימי חול</h4>
-            <ul class="shabbat-list">
+            <ul class="shabbat-list" id="weekday-list">
               <li><span>סליחות מניין א'</span><span class="time">5:15</span></li>
               <li><span>תפילת ותיקין (הודו)</span><span class="time">6:02</span></li>
               <li><span>תפילת ערבית</span><span class="time">21:00</span></li>
@@ -80,7 +81,7 @@
             </ul>
 
             <h4 style="margin-top:22px;">שיעורים במהלך השבוע</h4>
-            <ul class="shabbat-list">
+            <ul class="shabbat-list" id="shiurim-list">
               <li><span>שני - שיעור תנ"ך, הרב דוד אסולין</span><span class="time">21:15</span></li>
               <li><span>רביעי - שיעור כזרי לנוער, ירון יארק</span><span class="time">20:15</span></li>
               <li><span>רביעי - שיעור בכתבי הרב קוק, הרב אסף</span><span class="time">21:15</span></li>

@@ -463,11 +463,29 @@ function renderShabbatTimes() {
   document.getElementById("arvit-motzash-time").textContent = formatTime(t.arvitMotzash);
 }
 
+// מושך את שם הפרשה הנוכחית אוטומטית מ-Hebcal (ללא צורך בעדכון ידני מדי שבוע)
+async function renderParashaName() {
+  const el = document.getElementById("parasha-title");
+  if (!el) return; // לא בעמוד שבת
+  try {
+    const url = `https://www.hebcal.com/shabbat?cfg=json&latitude=${NETIVOT.lat}&longitude=${NETIVOT.lon}&tzid=${encodeURIComponent(NETIVOT.timeZone)}&M=on`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const parashaItem = (data.items || []).find((i) => i.category === "parashat");
+    if (parashaItem?.hebrew) {
+      el.textContent = "שבת " + parashaItem.hebrew;
+    }
+  } catch (e) {
+    // אם אין רשת/ה-API לא זמין - נשאר השם הקבוע שכתוב בקובץ כברירת מחדל
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayCard();
   renderMonthTable();
   initMonthNav();
   renderShabbatTimes();
+  renderParashaName();
   // בעמוד לוח הזמנים החודשי - למקד את הגלילה על שורת "היום" בטעינה הראשונית
   const todayRow = document.querySelector("#zman-table-body tr.today");
   if (todayRow) {

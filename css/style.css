@@ -505,20 +505,19 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
 .footer-qr span { font-size: 0.78rem; opacity: 0.8; }
 @media print { .footer-qr { display: none !important; } }
 
-.whatsapp-join-card {
+.brand-group {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 24px;
-  max-width: 340px;
-  margin: 0 auto;
+  gap: 14px;
 }
-.whatsapp-join-logo { height: 90px; width: auto; order: 2; }
-.whatsapp-join-qr { width: 110px; height: 110px; border-radius: 8px; order: 1; }
-@media (max-width: 480px) {
-  .whatsapp-join-card { gap: 16px; }
-  .whatsapp-join-logo { height: 70px; }
-  .whatsapp-join-qr { width: 90px; height: 90px; }
+.header-whatsapp-qr img {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  display: block;
+}
+@media (max-width: 780px) {
+  .header-whatsapp-qr img { width: 44px; height: 44px; }
 }
 
 .whatsapp-share-btn {

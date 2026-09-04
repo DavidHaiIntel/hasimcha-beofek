@@ -215,12 +215,16 @@ function formatGregorian(date) {
 
 function formatHebrewDate(date) {
   try {
-    return new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
+    const parts = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
       timeZone: NETIVOT.timeZone,
       day: "numeric",
       month: "long",
       year: "numeric",
-    }).format(date);
+    }).formatToParts(date);
+    const day = Number(parts.find((p) => p.type === "day")?.value);
+    const month = parts.find((p) => p.type === "month")?.value;
+    const year = parts.find((p) => p.type === "year")?.value;
+    return `${toHebrewNumeral(day)} ב${month} ${year}`;
   } catch (e) {
     return "";
   }

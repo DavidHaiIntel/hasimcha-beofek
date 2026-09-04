@@ -503,18 +503,19 @@ function renderSukkotNetzTable() {
   for (let day = 16; day <= 21; day++) {
     const date = new Date(tishreiStart);
     date.setDate(date.getDate() + (day - 1));
-    const { hanetz } = getShulZmanim(date);
+    const { hanetz, tefila } = getShulZmanim(date);
     const isToday = date.toDateString() === today.toDateString();
     const gregorian = `${date.getDate()} ב${GREGORIAN_MONTHS[date.getMonth()]}`;
     rows += `<tr class="${isToday ? "today" : ""}">
       <td>${toHebrewNumeral(day)} בתשרי</td>
       <td>${gregorian}</td>
       <td class="time">${formatTime(hanetz)}</td>
+      <td class="time">${formatTime(tefila)}</td>
     </tr>`;
   }
   wrap.innerHTML = `
-    <table class="zman-table" style="max-width:500px; margin:14px auto 0;">
-      <thead><tr><th>תאריך עברי</th><th>תאריך לועזי</th><th>הנץ החמה</th></tr></thead>
+    <table class="zman-table" style="max-width:560px; margin:14px auto 0;">
+      <thead><tr><th>תאריך עברי</th><th>תאריך לועזי</th><th>הנץ החמה</th><th>תחילת תפילה</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 }

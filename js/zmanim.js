@@ -106,12 +106,32 @@ function calcSunTimes(year, month, day, lat, lon) {
   };
 }
 
+// מחפש את זמן ההנץ בטבלת הנתונים האמיתית שנמשכה מלוח "חי" (NETZ_DATA), לפי תאריך עברי
+function getHanetzFromRealData(date) {
+  if (typeof NETZ_DATA === "undefined") return null;
+  const parts = hebrewCivilFormatter.formatToParts(date);
+  const day = Number(parts.find((p) => p.type === "day")?.value);
+  const month = parts.find((p) => p.type === "month")?.value;
+  const year = Number(parts.find((p) => p.type === "year")?.value);
+  const timeStr = NETZ_DATA[year]?.[month]?.[day - 1];
+  if (!timeStr) return null;
+  const [h, m, s] = timeStr.split(":").map(Number);
+  const result = new Date(date);
+  result.setHours(h, m, s, 0);
+  return result;
+}
+
 // מחזיר את זמני ההנץ ותחילת התפילה עבור אובייקט Date נתון
 function getShulZmanim(date) {
   const y = date.getFullYear();
   const m = date.getMonth() + 1;
   const d = date.getDate();
-  const { sunrise } = calcSunTimes(y, m, d, NETIVOT.lat, NETIVOT.lon);
+  // קודם ננסה למשוך את הזמן המדויק מהטבלה האמיתית (לוח "חי") - אם קיים לתאריך זה
+  let sunrise = getHanetzFromRealData(date);
+  if (!sunrise) {
+    // מחוץ לטווח הנתונים שנמשכו (NETZ_DATA) - חוזרים לחישוב אסטרונומי מקורב
+    sunrise = calcSunTimes(y, m, d, NETIVOT.lat, NETIVOT.lon).sunrise;
+  }
   if (!sunrise) return { hanetz: null, tefila: null };
   const tefila = new Date(sunrise.getTime() - MINUTES_BEFORE_HANETZ * 60000);
   return { hanetz: sunrise, tefila };
@@ -168,9 +188,9 @@ function getDayStatus(date) {
 
 function formatTime(date) {
   if (!date) return "--:--";
-  // מעגל לדקה הקרובה ביותר (במקום לחתוך) - כדי להתאים ללוחות ציבוריים כמו לוח "חי"
-  const rounded = new Date(Math.round(date.getTime() / 60000) * 60000);
-  return rounded.toLocaleTimeString("he-IL", {
+  // חותך שניות (לא מעגל) - כך chaitables.com מציג את הזמן הרגיל שלו (למשל 6:23:30 -> "6:23")
+  const truncated = new Date(Math.floor(date.getTime() / 60000) * 60000);
+  return truncated.toLocaleTimeString("he-IL", {
     timeZone: NETIVOT.timeZone,
     hour: "2-digit",
     minute: "2-digit",

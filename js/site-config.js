@@ -4,6 +4,6 @@
    כשדף כבוי, הקישור אליו נעלם מהניווט בכל האתר, והדף עצמו מציג הודעה במקום התוכן. */
 const SITE_CONFIG = {
   extraPages: [
-    { key: "sukkot", label: "לימוד סוכות", url: "sukkot.html", enabled: false },
+    { key: "sukkot", label: "לימוד סוכות", url: "sukkot.html", enabled: true },
   ],
 };

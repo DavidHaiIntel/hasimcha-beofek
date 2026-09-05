@@ -451,7 +451,7 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
 .print-btn-wrap { max-width: 760px; margin: 18px auto 0; text-align: center; }
 
 @media print {
-  @page { size: landscape; margin: 8mm; }
+  @page { size: 297mm 210mm; margin: 8mm; } /* A4 לרוחב מפורש (לא רק מילת מפתח landscape, כדי שדפדפנים יכבדו את זה) */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -464,8 +464,11 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
   .shabbat-poster {
     --print-scale: 1; /* מוגדר/מעודכן ע"י JS (ראו shabbat.html) כדי שהלוז תמיד יכנס לדף אחד */
     box-shadow: none;
-    max-width: 100%;
-    width: 100%;
+    /* רוחב קבוע (לא 100%!) - כדי שמדידת הגובה ב-JS תשקף את רוחב ההדפסה האמיתי, לא את רוחב המסך */
+    width: 281mm;
+    max-width: 281mm;
+    margin-left: auto;
+    margin-right: auto;
     page-break-inside: avoid;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

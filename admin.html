@@ -23,7 +23,8 @@
   .admin-row button { background: #f4dede; color: #a33; border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; }
   .admin-add-btn { background: #eef6f4; color: var(--color-teal); border: 1px solid var(--color-teal); border-radius: 8px; padding: 8px 14px; cursor: pointer; margin-bottom: 18px; }
   .extra-page-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
-  .extra-page-row label { font-weight: 500; margin: 0; }
+  .extra-page-row label { font-weight: 500; margin: 0; flex: 1; }
+  .extra-page-row .remove-page-btn { background: #f4dede; color: #a33; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 0.85rem; }
   .admin-msg { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-size: 0.95rem; }
   .admin-msg.ok { background: #e7f6ee; color: #1f7a4a; }
   .admin-msg.err { background: #fbe9e9; color: #a33; }
@@ -48,7 +49,7 @@
       <a href="index.html">בית</a>
       <a href="zmanim.html">זמני תפילה</a>
       <a href="shabbat.html">שבת קודש</a>
-      <a href="sukkot.html">לימוד סוכות</a>
+      <span id="extra-nav-links"></span>
       <a href="about.html">הקהילה</a>
       <a href="donations.html">תרומות</a>
     </nav>
@@ -88,8 +89,24 @@
 
         <fieldset>
           <legend>עמודים נוספים באתר</legend>
-          <p class="admin-help">הדפים הקבועים (בית, זמני תפילה, שבת קודש) תמיד פעילים. כאן ניתן להדליק/לכבות דפים עונתיים/זמניים.</p>
+          <p class="admin-help">הדפים הקבועים (בית, זמני תפילה, שבת קודש, הקהילה, תרומות) תמיד פעילים. כאן ניתן להדליק/לכבות/למחוק דפים נוספים, ולהוסיף דפים חדשים.</p>
           <div id="extra-pages-rows"></div>
+
+          <div class="admin-help" style="margin-top:18px; font-weight:700; color:var(--color-navy-dark);">הוספת דף חדש</div>
+          <div class="admin-field">
+            <label for="new-page-title">כותרת הדף (יופיע בניווט ובכותרת הדף)</label>
+            <input type="text" id="new-page-title" placeholder='לדוגמה: ליל עיון'>
+          </div>
+          <div class="admin-field">
+            <label for="new-page-slug">כתובת הדף (באנגלית, ללא רווחים, מסתיים ב-.html)</label>
+            <input type="text" id="new-page-slug" placeholder="lel-iyun.html">
+          </div>
+          <div class="admin-field">
+            <label for="new-page-body">תוכן הדף (כל פסקה בשורה נפרדת, עם שורה ריקה ביניהן)</label>
+            <textarea id="new-page-body" rows="6" style="width:100%; padding:10px 12px; border:1px solid #d5dee2; border-radius:8px; font-family:inherit; box-sizing:border-box;"></textarea>
+          </div>
+          <button type="button" class="btn outline" id="create-page-btn">צור דף חדש</button>
+          <div id="create-page-msg" style="display:none; margin-top:10px;"></div>
         </fieldset>
 
         <fieldset>

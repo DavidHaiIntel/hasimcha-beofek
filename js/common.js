@@ -8,26 +8,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const yearEl = document.getElementById("current-year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  // הסתרת קישורים (בניווט וגם כרטיסי "עוד באתר") לדפים נוספים שכובו מעמוד הניהול
+  // בניית קישורי הניווט לדפים נוספים (מנוהלים דרך עמוד הניהול, ב-SITE_CONFIG) - וחסימת תוכן דף כבוי
   if (typeof SITE_CONFIG !== "undefined") {
     const currentPage = location.pathname.split("/").pop();
+    const navSlot = document.getElementById("extra-nav-links");
     SITE_CONFIG.extraPages.forEach((p) => {
+      if (p.enabled && navSlot) {
+        const a = document.createElement("a");
+        a.href = p.url;
+        a.textContent = p.label;
+        if (currentPage === p.url) a.className = "active";
+        navSlot.appendChild(a);
+      }
       if (!p.enabled) {
         document.querySelectorAll(`a[href="${p.url}"]`).forEach((a) => {
           const card = a.closest(".info-card");
           (card || a).remove();
         });
-        if (currentPage === p.url) {
-          const main = document.querySelector("main");
-          if (main) {
-            main.innerHTML = `
-              <section class="section">
-                <div class="container" style="text-align:center; padding: 60px 20px;">
-                  <h3>הפעילות "${p.label}" אינה פעילה כרגע</h3>
-                  <p class="subtitle"><a href="index.html">חזרה לדף הבית</a></p>
-                </div>
-              </section>`;
-          }
+      }
+      if (currentPage === p.url && !p.enabled) {
+        const main = document.querySelector("main");
+        if (main) {
+          main.innerHTML = `
+            <section class="section">
+              <div class="container" style="text-align:center; padding: 60px 20px;">
+                <h3>הפעילות "${p.label}" אינה פעילה כרגע</h3>
+                <p class="subtitle"><a href="index.html">חזרה לדף הבית</a></p>
+              </div>
+            </section>`;
         }
       }
     });

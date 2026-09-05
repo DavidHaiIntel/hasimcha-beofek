@@ -100,7 +100,9 @@ function renderExtraPagesForm(pages) {
     row.innerHTML = `
       <input type="checkbox" class="extra-page-enabled" id="extra-${p.key}" ${p.enabled ? "checked" : ""}>
       <label for="extra-${p.key}">${p.label} (${p.url})</label>
+      <button type="button" class="remove-page-btn">מחק דף</button>
     `;
+    row.querySelector(".remove-page-btn").addEventListener("click", () => row.remove());
     container.appendChild(row);
   });
 }
@@ -128,6 +130,146 @@ ${list}
   ],
 };
 `;
+}
+
+function addExtraPageRow(page) {
+  const container = document.getElementById("extra-pages-rows");
+  const row = document.createElement("div");
+  row.className = "extra-page-row";
+  row.dataset.key = page.key;
+  row.dataset.url = page.url;
+  row.innerHTML = `
+    <input type="checkbox" class="extra-page-enabled" id="extra-${page.key}" checked>
+    <label for="extra-${page.key}">${page.label} (${page.url})</label>
+    <button type="button" class="remove-page-btn">מחק דף</button>
+  `;
+  row.querySelector(".remove-page-btn").addEventListener("click", () => row.remove());
+  container.appendChild(row);
+}
+
+// בונה HTML מלא לדף חדש, באותו מבנה (header/nav/footer) כמו שאר דפי האתר
+function buildNewPageHtml(title, bodyText) {
+  const paragraphs = bodyText
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => `        <p>${p.replace(/\n/g, "<br>")}</p>`)
+    .join("\n");
+  return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title} | השמחה שבאופק</title>
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html">
+      <img src="images/logo.png" alt="לוגו קהילת אוהב ישראל">
+      <div class="brand-text">
+        <h1>בית הכנסת השמחה שבאופק</h1>
+        <p>קהילת אוהב ישראל | נתיבות</p>
+      </div>
+    </a>
+    <button class="nav-toggle" aria-label="פתח תפריט">&#9776;</button>
+    <nav class="main-nav">
+      <a href="index.html">בית</a>
+      <a href="zmanim.html">זמני תפילה</a>
+      <a href="shabbat.html">שבת קודש</a>
+      <span id="extra-nav-links"></span>
+      <a href="about.html">הקהילה</a>
+      <a href="donations.html">תרומות</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container" style="max-width:800px;">
+      <h2 style="text-align:center;">${title}</h2>
+${paragraphs}
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p><strong>בית כנסת "השמחה שבאופק"</strong> ע"ש שמחה חלילי ואופק חלילי ז"ל</p>
+    <p>ומרכז קהילתי "אוהב ישראל" ע"ש הרב ישראל פרידמן בן שלום זצ"ל</p>
+    <p class="address">רח' קטיף 36, נתיבות</p>
+    <div class="footer-qr">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=https%3A%2F%2Fdavidhaiintel.github.io%2Fhasimcha-beofek%2Findex.html" alt="קוד QR לאתר">
+      <span>סרקו להגעה לאתר</span>
+    </div>
+    <p>&copy; <span id="current-year"></span> קהילת אוהב ישראל</p>
+    <p class="admin-link"><a href="admin.html">ניהול</a></p>
+  </div>
+</footer>
+
+<script src="js/site-config.js"></script>
+<script src="js/common.js"></script>
+</body>
+</html>
+`;
+}
+
+// יוצר קובץ חדש ב-GitHub (PUT ללא sha - כי הקובץ עדיין לא קיים)
+async function createFileOnGithub(path, content, commitMessage, token) {
+  const resp = await fetch(
+    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+    {
+      method: "PUT",
+      headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: commitMessage,
+        content: b64EncodeUnicode(content),
+        branch: GH_BRANCH,
+      }),
+    }
+  );
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.message || `יצירת ${path} נכשלה`);
+  }
+}
+
+async function createNewPage() {
+  const token = document.getElementById("gh-token").value.trim();
+  const title = document.getElementById("new-page-title").value.trim();
+  let slug = document.getElementById("new-page-slug").value.trim();
+  const body = document.getElementById("new-page-body").value.trim();
+  const msgEl = document.getElementById("create-page-msg");
+  const showMsg2 = (text, ok) => {
+    msgEl.style.display = "block";
+    msgEl.className = "admin-msg " + (ok ? "ok" : "err");
+    msgEl.textContent = text;
+  };
+
+  if (!token) return showMsg2("יש להזין GitHub Personal Access Token למעלה כדי ליצור דף.", false);
+  if (!title || !slug) return showMsg2("יש למלא כותרת וכתובת לדף.", false);
+  if (!slug.endsWith(".html")) slug += ".html";
+  slug = slug.replace(/[^a-zA-Z0-9\-_.]/g, "");
+  const key = slug.replace(/\.html$/, "");
+
+  showMsg2("יוצר דף...", true);
+  try {
+    const html = buildNewPageHtml(title, body || "");
+    await createFileOnGithub(slug, html, `יצירת דף חדש: ${title}`, token);
+    addExtraPageRow({ key, label: title, url: slug });
+    showMsg2(`הדף "${title}" נוצר! לחצו על "שמור ופרסם באתר" למטה כדי להוסיף אותו לניווט.`, true);
+    document.getElementById("new-page-title").value = "";
+    document.getElementById("new-page-slug").value = "";
+    document.getElementById("new-page-body").value = "";
+  } catch (e) {
+    showMsg2("שגיאה: " + e.message, false);
+  }
 }
 
 async function loadIntoForm() {
@@ -259,5 +401,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("save-btn").addEventListener("click", () => {
     sessionStorage.setItem("gh_token", document.getElementById("gh-token").value.trim());
     saveToGithub();
+  });
+
+  document.getElementById("create-page-btn").addEventListener("click", () => {
+    sessionStorage.setItem("gh_token", document.getElementById("gh-token").value.trim());
+    createNewPage();
   });
 });

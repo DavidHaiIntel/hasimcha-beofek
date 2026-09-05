@@ -450,9 +450,9 @@ function calcShabbatTimes(reference = new Date()) {
   );
   if (!fridaySun.sunset || !saturdaySun.sunset) return null;
 
-  // כניסת/יציאת שבת כוילו מול אתר ישיבה (yeshiva.org.il) לנתיבות: כניסה ~30 דק' לפני שקיעה, יציאה ~40 דק' אחרי שקיעה
-  const candleLighting = new Date(fridaySun.sunset.getTime() - 30 * 60000);
-  const shabbatEnds = new Date(saturdaySun.sunset.getTime() + 40 * 60000);
+  // כניסת/יציאת שבת כוילו מול אתר ישיבה (yeshiva.org.il) לנתיבות: 2 מדידות בפועל (שקיעה מול כניסה/יציאה) נתנו בדיוק 29 דק' לפני שקיעה ו-37 דק' אחרי שקיעה
+  const candleLighting = new Date(fridaySun.sunset.getTime() - 29 * 60000);
+  const shabbatEnds = new Date(saturdaySun.sunset.getTime() + 37 * 60000);
   const minchaErev = roundToNearestMinutes(
     new Date(fridaySun.sunset.getTime() - 8 * 60000), 5
   );

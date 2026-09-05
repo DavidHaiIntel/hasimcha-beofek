@@ -75,6 +75,85 @@ function parseTitleFromHtml(html) {
   return match ? match[1].trim() : "";
 }
 
+// ===== עמוד הקהילה (about.html) - קבוצות הנהלה (רב/ועדים/גבאים) =====
+function parseCommitteeFromHtml(html) {
+  const blockMatch = html.match(/<!-- COMMITTEE_START -->([\s\S]*?)<!-- COMMITTEE_END -->/);
+  if (!blockMatch) return [];
+  const cardRe = /<div class="committee-card"[^>]*>\s*<h4>([\s\S]*?)<\/h4>\s*<ul>([\s\S]*?)<\/ul>\s*<\/div>/g;
+  const groups = [];
+  let cardMatch;
+  while ((cardMatch = cardRe.exec(blockMatch[1])) !== null) {
+    const title = cardMatch[1].trim();
+    const names = [];
+    const liRe = /<li>([\s\S]*?)<\/li>/g;
+    let liMatch;
+    while ((liMatch = liRe.exec(cardMatch[2])) !== null) {
+      names.push(liMatch[1].trim());
+    }
+    groups.push({ title, names });
+  }
+  return groups;
+}
+
+function buildCommitteeHtml(groups) {
+  const cards = groups
+    .map((g) => {
+      const items = g.names.map((n) => `          <li>${n}</li>`).join("\n");
+      return `        <div class="committee-card">\n          <h4>${g.title}</h4>\n          <ul>\n${items}\n          </ul>\n        </div>`;
+    })
+    .join("\n");
+  return `<!-- COMMITTEE_START -->\n      <div class="committee-grid">\n${cards}\n      </div>\n      <!-- COMMITTEE_END -->`;
+}
+
+function addNameRow(container, name = "") {
+  const row = document.createElement("div");
+  row.className = "admin-row";
+  row.style.gridTemplateColumns = "1fr auto";
+  row.innerHTML = `
+    <input type="text" class="row-name" placeholder="שם" value="${name.replace(/"/g, "&quot;")}">
+    <button type="button" class="remove-row-btn">הסר</button>
+  `;
+  row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+  container.appendChild(row);
+}
+
+function addCommitteeGroup(group = { title: "", names: [] }) {
+  const container = document.getElementById("committee-groups");
+  const groupEl = document.createElement("div");
+  groupEl.className = "committee-group-editor";
+  groupEl.innerHTML = `
+    <div class="admin-field">
+      <label>שם הקבוצה</label>
+      <input type="text" class="group-title" value="${group.title.replace(/"/g, "&quot;")}">
+    </div>
+    <div class="group-names"></div>
+    <button type="button" class="admin-add-btn add-name-btn">+ הוסף שם</button>
+    <button type="button" class="remove-page-btn remove-group-btn">מחק קבוצה</button>
+  `;
+  const namesContainer = groupEl.querySelector(".group-names");
+  group.names.forEach((n) => addNameRow(namesContainer, n));
+  groupEl.querySelector(".add-name-btn").addEventListener("click", () => addNameRow(namesContainer));
+  groupEl.querySelector(".remove-group-btn").addEventListener("click", () => groupEl.remove());
+  container.appendChild(groupEl);
+}
+
+function renderCommitteeForm(groups) {
+  const container = document.getElementById("committee-groups");
+  container.innerHTML = "";
+  groups.forEach((g) => addCommitteeGroup(g));
+}
+
+function getCommitteeFromForm() {
+  return Array.from(document.querySelectorAll("#committee-groups .committee-group-editor"))
+    .map((groupEl) => ({
+      title: groupEl.querySelector(".group-title").value.trim(),
+      names: Array.from(groupEl.querySelectorAll(".group-names .row-name"))
+        .map((input) => input.value.trim())
+        .filter(Boolean),
+    }))
+    .filter((g) => g.title || g.names.length);
+}
+
 async function fetchLiveShabbatHtml() {
   const resp = await fetch(
     `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/shabbat.html?t=${Date.now()}`
@@ -88,6 +167,14 @@ async function fetchLiveSiteConfigJs() {
     `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/site-config.js?t=${Date.now()}`
   );
   if (!resp.ok) throw new Error("לא הצלחתי לטעון את הגדרות האתר מ-GitHub");
+  return resp.text();
+}
+
+async function fetchLiveAboutHtml() {
+  const resp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/about.html?t=${Date.now()}`
+  );
+  if (!resp.ok) throw new Error("לא הצלחתי לטעון את דף הקהילה מ-GitHub");
   return resp.text();
 }
 
@@ -297,6 +384,9 @@ async function loadIntoForm() {
 
   const configJs = await fetchLiveSiteConfigJs();
   renderExtraPagesForm(parseExtraPagesFromJs(configJs));
+
+  const aboutHtml = await fetchLiveAboutHtml();
+  renderCommitteeForm(parseCommitteeFromHtml(aboutHtml));
 }
 
 function showMsg(text, ok) {
@@ -334,6 +424,16 @@ async function saveToGithub() {
       "js/site-config.js",
       () => buildSiteConfigJs(getExtraPagesFromForm()),
       `עדכון הגדרות דפים נוספים`,
+      token
+    );
+
+    await saveFileToGithub(
+      "about.html",
+      (currentHtml) => currentHtml.replace(
+        /<!-- COMMITTEE_START -->[\s\S]*?<!-- COMMITTEE_END -->/,
+        buildCommitteeHtml(getCommitteeFromForm())
+      ),
+      `עדכון עמוד הקהילה`,
       token
     );
 
@@ -420,4 +520,6 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionStorage.setItem("gh_token", document.getElementById("gh-token").value.trim());
     createNewPage();
   });
+
+  document.getElementById("add-group-btn").addEventListener("click", () => addCommitteeGroup());
 });

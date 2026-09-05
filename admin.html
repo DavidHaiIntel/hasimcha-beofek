@@ -33,6 +33,9 @@
   .admin-help { font-size: 0.85rem; color: #6b7a80; margin-top: 4px; }
   fieldset { border: 1px solid #e0e6e8; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
   legend { padding: 0 8px; font-weight: 700; color: var(--color-teal); }
+  .committee-group-editor { border: 1px solid #e0e6e8; border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+  .committee-group-editor .group-names { margin-bottom: 8px; }
+  .committee-group-editor .remove-group-btn { margin-inline-start: 8px; }
 </style>
 </head>
 <body>
@@ -130,6 +133,13 @@
           <legend>שיעורים במהלך השבוע</legend>
           <div id="shiurim-rows"></div>
           <button type="button" class="admin-add-btn" data-target="shiurim-rows">+ הוסף שורה</button>
+        </fieldset>
+
+        <fieldset>
+          <legend>עמוד הקהילה (הנהלה)</legend>
+          <p class="admin-help">עריכת קבוצות הנהלה (רב, ועדים, גבאים) שמופיעות בעמוד "הקהילה" באתר.</p>
+          <div id="committee-groups"></div>
+          <button type="button" class="btn outline" id="add-group-btn">+ הוסף קבוצה</button>
         </fieldset>
 
         <button class="btn" id="save-btn">שמור ופרסם באתר</button>

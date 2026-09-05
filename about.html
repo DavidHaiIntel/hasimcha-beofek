@@ -38,6 +38,7 @@
   .committee-card h4 { color: var(--color-teal); margin: 0 0 10px; text-align: center; }
   .committee-card ul { list-style: none; margin: 0; padding: 0; text-align: center; }
   .committee-card li { padding: 5px 0; }
+  .committee-grid > .committee-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
   @media (max-width: 720px) {
     .committee-grid { grid-template-columns: 1fr; }
   }
@@ -80,6 +81,7 @@
 
       <h3 style="text-align:center;">הנהלת הקהילה</h3>
 
+      <!-- COMMITTEE_START -->
       <div class="committee-grid">
         <div class="committee-card">
           <h4>רב בית הכנסת</h4>
@@ -111,7 +113,7 @@
             <li>שלום ליאון</li>
           </ul>
         </div>
-        <div class="committee-card" style="grid-column: 1 / -1;">
+        <div class="committee-card">
           <h4>ועדת ביקורת עמותה</h4>
           <ul>
             <li>אלעד עידן</li>
@@ -119,6 +121,7 @@
           </ul>
         </div>
       </div>
+      <!-- COMMITTEE_END -->
 
     </div>
   </section>

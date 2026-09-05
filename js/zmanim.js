@@ -411,14 +411,15 @@ function initMonthNav() {
    - כניסת שבת = שקיעת יום שישי פחות 10 דק'.
    - צאת שבת = שקיעת יום שבת ועוד 45 דק'.
    - שיר השירים = 10 דק' לפני מנחה של ערב שבת.
-   - מנחה/קבלת שבת (ערב שבת) = שקיעת יום שישי פחות 8 דק', מעוגל לרבע-שעה הקרוב ביותר של 5 דק'.
+   - מנחה/קבלת שבת (ערב שבת) = שקיעת יום שישי פחות 18 דק', מעוגל כלפי מטה ל-5 הדק' הקרובות.
    - שחרית של שבת = 8:30 בשעון קיץ, 8:00 בשעון חורף (קבוע, לא תלוי שקיעה).
    - לימוד הורים וילדים = 45 דק' לפני מנחה של שבת.
-   - מנחה של שבת (צהריים) = בערך שעה לפני שקיעת יום שבת, מעוגל ל-15 דק' הקרובות.
-   - ערבית מוצ"ש = 8 דק' לפני צאת שבת (המוצג למעלה). */
-function roundToNearestMinutes(date, minutes) {
+   - מנחה של שבת (צהריים) = בערך שעה לפני שקיעת יום שבת, מעוגל כלפי מטה ל-15 הדק' הקרובות.
+   - ערבית מוצ"ש = 8 דק' לפני צאת שבת (המוצג למעלה).
+   כל העיגולים לעיל הם תמיד כלפי מטה (לא לקרוב ביותר) - ראו roundDownToMinutes. */
+function roundDownToMinutes(date, minutes) {
   const ms = minutes * 60000;
-  return new Date(Math.round(date.getTime() / ms) * ms);
+  return new Date(Math.floor(date.getTime() / ms) * ms);
 }
 
 function isIsraelDST(date) {
@@ -466,12 +467,12 @@ function calcShabbatTimes(reference = new Date()) {
   // כי מספר הדקות אחרי השקיעה משתנה בין עונות (36 בחורף, 40 בקיץ) בעוד שהזנית קבועה כל השנה
   const candleLighting = new Date(fridaySun.sunset.getTime() - 29.5 * 60000);
   const shabbatEnds = saturdaySun.tzeit;
-  const minchaErev = roundToNearestMinutes(
+  const minchaErev = roundDownToMinutes(
     new Date(fridaySun.sunset.getTime() - 18 * 60000), 5
   );
   const shirHashirim = new Date(minchaErev.getTime() - 10 * 60000);
   const shacharit = isIsraelDST(saturday) ? "8:30" : "8:00";
-  const minchaShabbat = roundToNearestMinutes(
+  const minchaShabbat = roundDownToMinutes(
     new Date(saturdaySun.sunset.getTime() - 60 * 60000), 15
   );
   const limudHorim = new Date(minchaShabbat.getTime() - 45 * 60000);

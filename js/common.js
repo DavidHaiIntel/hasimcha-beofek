@@ -8,6 +8,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const yearEl = document.getElementById("current-year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+  // רשימת שיעורי התורה (js/shiurim-data.js) - מוצגת בכל אלמנט עם class="js-shiurim-list" בעמוד
+  // (כרגע: דף הבית ודף השבת) - עריכה בניהול משתקפת בשניהם יחד, כי המקור הוא קובץ אחד משותף
+  if (typeof SHIURIM_LIST !== "undefined") {
+    document.querySelectorAll(".js-shiurim-list").forEach((ul) => {
+      ul.innerHTML = SHIURIM_LIST
+        .filter((s) => !s.hidden)
+        .map((s) => `<li><span>${s.label}</span><span class="time">${s.time}</span></li>`)
+        .join("");
+    });
+  }
+
   // בניית קישורי הניווט לדפים נוספים (מנוהלים דרך עמוד הניהול, ב-SITE_CONFIG) - וחסימת תוכן דף כבוי
   if (typeof SITE_CONFIG !== "undefined") {
     const currentPage = location.pathname.split("/").pop();

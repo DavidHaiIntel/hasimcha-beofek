@@ -178,6 +178,39 @@ async function fetchLiveAboutHtml() {
   return resp.text();
 }
 
+// ===== שיעורי תורה (js/shiurim-data.js) - רשימה משותפת המוצגת גם בדף הבית וגם בדף השבת =====
+async function fetchLiveShiurimDataJs() {
+  const resp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/shiurim-data.js?t=${Date.now()}`
+  );
+  if (!resp.ok) throw new Error("לא הצלחתי לטעון את רשימת השיעורים מ-GitHub");
+  return resp.text();
+}
+
+function parseShiurimFromJs(jsText) {
+  const match = jsText.match(/SHIURIM_LIST\s*=\s*(\[[\s\S]*?\]);/);
+  if (!match) return [];
+  try {
+    // eslint-disable-next-line no-new-func
+    return Function(`"use strict"; return (${match[1]});`)();
+  } catch (e) {
+    return [];
+  }
+}
+
+function buildShiurimDataJs(rows) {
+  const list = rows
+    .map((r) => `  { label: "${r.label.replace(/"/g, '\\"')}", time: "${r.time}", hidden: ${r.hidden} },`)
+    .join("\n");
+  return `/* ===== שיעורי תורה במהלך השבוע - נערכים מעמוד הניהול (admin.html) =====
+   הרשימה הזו מוצגת גם בדף השבת וגם בדף הבית (בכל אלמנט עם class="js-shiurim-list") -
+   עריכה כאן דרך הניהול משתקפת בשני המקומות יחד. */
+const SHIURIM_LIST = [
+${list}
+];
+`;
+}
+
 function parseExtraPagesFromJs(jsText) {
   const match = jsText.match(/extraPages:\s*(\[[\s\S]*?\])\s*,?\s*\};/);
   if (!match) return [];
@@ -379,8 +412,9 @@ async function loadIntoForm() {
   document.getElementById("weekday-rows").innerHTML = "";
   parseListFromHtml(html, "weekday-list").forEach((r) => addRow("weekday-rows", r.label, r.time, r.hidden));
 
+  const shiurimJs = await fetchLiveShiurimDataJs();
   document.getElementById("shiurim-rows").innerHTML = "";
-  parseListFromHtml(html, "shiurim-list").forEach((r) => addRow("shiurim-rows", r.label, r.time, r.hidden));
+  parseShiurimFromJs(shiurimJs).forEach((r) => addRow("shiurim-rows", r.label, r.time, r.hidden));
 
   const configJs = await fetchLiveSiteConfigJs();
   renderExtraPagesForm(parseExtraPagesFromJs(configJs));
@@ -410,13 +444,18 @@ async function saveToGithub() {
       (currentHtml) => {
         const newTitle = document.getElementById("parasha-title-input").value.trim();
         const newWeekdayList = buildListHtml("weekday-list", getRows("weekday-rows"));
-        const newShiurimList = buildListHtml("shiurim-list", getRows("shiurim-rows"));
         return currentHtml
           .replace(/<h3 id="parasha-title">[\s\S]*?<\/h3>/, `<h3 id="parasha-title">${newTitle}</h3>`)
-          .replace(/<ul class="shabbat-list" id="weekday-list">[\s\S]*?<\/ul>/, newWeekdayList)
-          .replace(/<ul class="shabbat-list" id="shiurim-list">[\s\S]*?<\/ul>/, newShiurimList);
+          .replace(/<ul class="shabbat-list" id="weekday-list">[\s\S]*?<\/ul>/, newWeekdayList);
       },
       `עדכון לוז שבת`,
+      token
+    );
+
+    await saveFileToGithub(
+      "js/shiurim-data.js",
+      () => buildShiurimDataJs(getRows("shiurim-rows")),
+      `עדכון שיעורי תורה`,
       token
     );
 

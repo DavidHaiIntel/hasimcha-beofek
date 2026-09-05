@@ -14,6 +14,10 @@ const SUNSET_ZENITH = 90.833;
 // תיקון גובה/אופק: נתיבות יושבת על גבעה (כ-150 מ' מעל פני הים), מה שדוחה את השקיעה הנראית בפועל
 // לעומת חישוב אופק ים שטוח. כויל מול 2 מדידות אמת (אתר ישיבה): השאיר שאריות שניות בודדות בלבד.
 const SUNSET_ELEVATION_CORRECTION_MIN = 1.5;
+// זנית "יציאת שבת" (צאת הכוכבים) - זנית קבועה במעלות (ולא מספר דקות קבוע!) מייצרת התאמה
+// מדויקת (לדקה) מול 2 מדידות אמת של אתר ישיבה בעונות שונות (חורף/קיץ), בעוד שמספר דקות קבוע
+// אחרי השקיעה השתנה בין העונות (36 בחורף, 40 בקיץ) - סימן מובהק לחישוב מבוסס זנית.
+const TZEIT_ZENITH = 98.58;
 
 const NETIVOT = {
   lat: 31.4231,
@@ -55,7 +59,7 @@ function julianDayNumber(year, month, day) {
  * @param {number} day יום בחודש
  * @param {number} lat קו רוחב (מעלות, צפון חיובי)
  * @param {number} lon קו אורך (מעלות, מזרח חיובי)
- * @returns {{sunrise: Date|null, sunset: Date|null}}
+ * @returns {{sunrise: Date|null, sunset: Date|null, tzeit: Date|null}}
  */
 function calcSunTimes(year, month, day, lat, lon) {
   const jd = julianDayNumber(year, month, day);
@@ -89,28 +93,32 @@ function calcSunTimes(year, month, day, lat, lon) {
         1.25 * e * e * Math.sin(2 * toRad(M))
     );
 
-  const zenith = SUNRISE_ZENITH; // כויל מול לוח "חי" (ראו הערה בראש הקובץ)
-  const cosHA =
-    Math.cos(toRad(zenith)) / (Math.cos(toRad(lat)) * Math.cos(toRad(decl))) -
-    Math.tan(toRad(lat)) * Math.tan(toRad(decl));
-  const cosHASet =
-    Math.cos(toRad(SUNSET_ZENITH)) / (Math.cos(toRad(lat)) * Math.cos(toRad(decl))) -
-    Math.tan(toRad(lat)) * Math.tan(toRad(decl));
-
-  if (cosHA > 1 || cosHA < -1 || cosHASet > 1 || cosHASet < -1) {
-    return { sunrise: null, sunset: null };
+  function hourAngle(zenith) {
+    const cosHA =
+      Math.cos(toRad(zenith)) / (Math.cos(toRad(lat)) * Math.cos(toRad(decl))) -
+      Math.tan(toRad(lat)) * Math.tan(toRad(decl));
+    if (cosHA > 1 || cosHA < -1) return null;
+    return toDeg(Math.acos(cosHA));
   }
 
-  const HA = toDeg(Math.acos(cosHA));
-  const HASet = toDeg(Math.acos(cosHASet));
+  const HA = hourAngle(SUNRISE_ZENITH); // כויל מול לוח "חי" (ראו הערה בראש הקובץ)
+  const HASet = hourAngle(SUNSET_ZENITH);
+  const HATzeit = hourAngle(TZEIT_ZENITH);
+
+  if (HA === null || HASet === null) {
+    return { sunrise: null, sunset: null, tzeit: null };
+  }
+
   const solarNoonUTCmin = 720 - 4 * lon - eqTime;
   const sunriseUTCmin = solarNoonUTCmin - 4 * HA;
   const sunsetUTCmin = solarNoonUTCmin + 4 * HASet + SUNSET_ELEVATION_CORRECTION_MIN;
+  const tzeitUTCmin = HATzeit === null ? null : solarNoonUTCmin + 4 * HATzeit;
 
   const midnightUTC = Date.UTC(year, month - 1, day, 0, 0, 0);
   return {
     sunrise: new Date(midnightUTC + sunriseUTCmin * 60000),
     sunset: new Date(midnightUTC + sunsetUTCmin * 60000),
+    tzeit: tzeitUTCmin === null ? null : new Date(midnightUTC + tzeitUTCmin * 60000),
   };
 }
 
@@ -451,12 +459,13 @@ function calcShabbatTimes(reference = new Date()) {
     saturday.getFullYear(), saturday.getMonth() + 1, saturday.getDate(),
     NETIVOT.lat, NETIVOT.lon
   );
-  if (!fridaySun.sunset || !saturdaySun.sunset) return null;
+  if (!fridaySun.sunset || !saturdaySun.tzeit) return null;
 
-  // כניסת/יציאת שבת כוילו מול אתר ישיבה (yeshiva.org.il) לנתיבות: 29.5 דק' לפני שקיעה, 36 דק' אחרי שקיעה
-  // (כויל מול 2 מדידות אמת בשתי תקופות שנה שונות - לך לך ומשפטים - יחד עם תיקון הגובה למעלה)
+  // כניסת שבת כוילה מול אתר ישיבה (yeshiva.org.il): 29.5 דק' לפני שקיעה (מדויק ב-2 בדיקות אמת)
+  // יציאת שבת = צאת הכוכבים לפי זנית TZEIT_ZENITH (ראו הערה למעלה) - לא הסטה קבועה בדקות,
+  // כי מספר הדקות אחרי השקיעה משתנה בין עונות (36 בחורף, 40 בקיץ) בעוד שהזנית קבועה כל השנה
   const candleLighting = new Date(fridaySun.sunset.getTime() - 29.5 * 60000);
-  const shabbatEnds = new Date(saturdaySun.sunset.getTime() + 36 * 60000);
+  const shabbatEnds = saturdaySun.tzeit;
   const minchaErev = roundToNearestMinutes(
     new Date(fridaySun.sunset.getTime() - 8 * 60000), 5
   );

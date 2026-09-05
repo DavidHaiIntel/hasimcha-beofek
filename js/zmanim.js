@@ -11,6 +11,9 @@
 const SUNRISE_ZENITH = 89.96;
 // שקיעה לצורך כניסת/יציאת שבת ותפילות - זנית "אזרחית" סטנדרטית (שונה מכיול ההנץ למעלה)
 const SUNSET_ZENITH = 90.833;
+// תיקון גובה/אופק: נתיבות יושבת על גבעה (כ-150 מ' מעל פני הים), מה שדוחה את השקיעה הנראית בפועל
+// לעומת חישוב אופק ים שטוח. כויל מול 2 מדידות אמת (אתר ישיבה): השאיר שאריות שניות בודדות בלבד.
+const SUNSET_ELEVATION_CORRECTION_MIN = 1.5;
 
 const NETIVOT = {
   lat: 31.4231,
@@ -102,7 +105,7 @@ function calcSunTimes(year, month, day, lat, lon) {
   const HASet = toDeg(Math.acos(cosHASet));
   const solarNoonUTCmin = 720 - 4 * lon - eqTime;
   const sunriseUTCmin = solarNoonUTCmin - 4 * HA;
-  const sunsetUTCmin = solarNoonUTCmin + 4 * HASet;
+  const sunsetUTCmin = solarNoonUTCmin + 4 * HASet + SUNSET_ELEVATION_CORRECTION_MIN;
 
   const midnightUTC = Date.UTC(year, month - 1, day, 0, 0, 0);
   return {
@@ -450,9 +453,10 @@ function calcShabbatTimes(reference = new Date()) {
   );
   if (!fridaySun.sunset || !saturdaySun.sunset) return null;
 
-  // כניסת/יציאת שבת כוילו מול אתר ישיבה (yeshiva.org.il) לנתיבות: 2 מדידות בפועל (שקיעה מול כניסה/יציאה) נתנו בדיוק 29 דק' לפני שקיעה ו-37 דק' אחרי שקיעה
-  const candleLighting = new Date(fridaySun.sunset.getTime() - 29 * 60000);
-  const shabbatEnds = new Date(saturdaySun.sunset.getTime() + 37 * 60000);
+  // כניסת/יציאת שבת כוילו מול אתר ישיבה (yeshiva.org.il) לנתיבות: 29.5 דק' לפני שקיעה, 36 דק' אחרי שקיעה
+  // (כויל מול 2 מדידות אמת בשתי תקופות שנה שונות - לך לך ומשפטים - יחד עם תיקון הגובה למעלה)
+  const candleLighting = new Date(fridaySun.sunset.getTime() - 29.5 * 60000);
+  const shabbatEnds = new Date(saturdaySun.sunset.getTime() + 36 * 60000);
   const minchaErev = roundToNearestMinutes(
     new Date(fridaySun.sunset.getTime() - 8 * 60000), 5
   );

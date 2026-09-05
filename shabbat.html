@@ -140,17 +140,18 @@
   // מתאים אוטומטית את גודל לוז השבת כדי שתמיד יכנס לדף הדפסה אחד, גם כשמוסיפים שורות בניהול.
   // משתמש במשתנה CSS ‎--print-scale‎ שמכפיל את גדלי הגופן/הריפוד בפועל (ראו style.css) - בניגוד
   // ל-transform/zoom, זה משנה את גודל הפריסה בפועל ולכן משפיע נכון על חלוקת עמודים בהדפסה.
+  // הגובה הפנוי נמדד בזמן אמת (document.documentElement.clientHeight) ולא מונח מראש לפי A4/לרוחב,
+  // כי הדפדפן/מדפסת עשויים להשתמש בגודל/כיוון דף שונה ממה שה-CSS מבקש (@page) - מדידה חיה תמיד נכונה.
   function fitShabbatPosterToOnePage() {
     const poster = document.getElementById("shabbat-poster");
     if (!poster) return;
-    const mmToPx = 96 / 25.4;
-    const availableHeightPx = (210 - 16) * mmToPx; // A4 לרוחב, מינוס שולי @page (8 מ"מ כל צד)
     poster.style.setProperty("--print-scale", "1");
     // כמה איטרציות (הקטנת גופן משנה מעט את היחס בין אלמנטים קבועים לטקסט, אז מתכנסים בהדרגה)
     let scale = 1;
     for (let i = 0; i < 4; i++) {
+      const availableHeightPx = document.documentElement.clientHeight;
       const actualHeightPx = poster.scrollHeight;
-      if (actualHeightPx <= availableHeightPx) break;
+      if (!availableHeightPx || actualHeightPx <= availableHeightPx) break;
       scale *= availableHeightPx / actualHeightPx;
       poster.style.setProperty("--print-scale", String(scale));
     }

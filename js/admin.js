@@ -16,16 +16,25 @@ function b64DecodeUnicode(str) {
   return decodeURIComponent(escape(atob(str)));
 }
 
-function addRow(containerId, label = "", time = "") {
+function addRow(containerId, label = "", time = "", hidden = false) {
   const container = document.getElementById(containerId);
   const row = document.createElement("div");
   row.className = "admin-row";
+  row.dataset.hidden = hidden ? "true" : "false";
   row.innerHTML = `
     <input type="text" class="row-label" placeholder="תיאור" value="${label.replace(/"/g, "&quot;")}">
     <input type="text" class="row-time" placeholder="שעה" value="${time.replace(/"/g, "&quot;")}">
+    <button type="button" class="hide-row-btn">${hidden ? "הצג" : "הסתר"}</button>
     <button type="button" class="remove-row-btn">הסר</button>
   `;
+  if (hidden) row.classList.add("row-hidden");
   row.querySelector(".remove-row-btn").addEventListener("click", () => row.remove());
+  row.querySelector(".hide-row-btn").addEventListener("click", (e) => {
+    const nowHidden = row.dataset.hidden !== "true";
+    row.dataset.hidden = nowHidden ? "true" : "false";
+    row.classList.toggle("row-hidden", nowHidden);
+    e.target.textContent = nowHidden ? "הצג" : "הסתר";
+  });
   container.appendChild(row);
 }
 
@@ -34,12 +43,16 @@ function getRows(containerId) {
   return Array.from(container.querySelectorAll(".admin-row")).map((row) => ({
     label: row.querySelector(".row-label").value.trim(),
     time: row.querySelector(".row-time").value.trim(),
+    hidden: row.dataset.hidden === "true",
   })).filter((r) => r.label || r.time);
 }
 
 function buildListHtml(id, rows) {
   const items = rows
-    .map((r) => `              <li><span>${r.label}</span><span class="time">${r.time}</span></li>`)
+    .map((r) => {
+      const hiddenAttr = r.hidden ? ' style="display:none" data-hidden="true"' : "";
+      return `              <li${hiddenAttr}><span>${r.label}</span><span class="time">${r.time}</span></li>`;
+    })
     .join("\n");
   return `<ul class="shabbat-list" id="${id}">\n${items}\n            </ul>`;
 }
@@ -48,11 +61,11 @@ function parseListFromHtml(html, id) {
   const re = new RegExp(`<ul class="shabbat-list" id="${id}">([\\s\\S]*?)</ul>`);
   const match = html.match(re);
   if (!match) return [];
-  const liRe = /<li><span>([\s\S]*?)<\/span><span class="time"[^>]*>([\s\S]*?)<\/span><\/li>/g;
+  const liRe = /<li([^>]*)><span>([\s\S]*?)<\/span><span class="time"[^>]*>([\s\S]*?)<\/span><\/li>/g;
   const rows = [];
   let m;
   while ((m = liRe.exec(match[1])) !== null) {
-    rows.push({ label: m[1].trim(), time: m[2].trim() });
+    rows.push({ label: m[2].trim(), time: m[3].trim(), hidden: /data-hidden="true"/.test(m[1]) });
   }
   return rows;
 }
@@ -277,10 +290,10 @@ async function loadIntoForm() {
   document.getElementById("parasha-title-input").value = parseTitleFromHtml(html);
 
   document.getElementById("weekday-rows").innerHTML = "";
-  parseListFromHtml(html, "weekday-list").forEach((r) => addRow("weekday-rows", r.label, r.time));
+  parseListFromHtml(html, "weekday-list").forEach((r) => addRow("weekday-rows", r.label, r.time, r.hidden));
 
   document.getElementById("shiurim-rows").innerHTML = "";
-  parseListFromHtml(html, "shiurim-list").forEach((r) => addRow("shiurim-rows", r.label, r.time));
+  parseListFromHtml(html, "shiurim-list").forEach((r) => addRow("shiurim-rows", r.label, r.time, r.hidden));
 
   const configJs = await fetchLiveSiteConfigJs();
   renderExtraPagesForm(parseExtraPagesFromJs(configJs));

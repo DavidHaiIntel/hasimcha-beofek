@@ -18,9 +18,11 @@
     width: 100%; padding: 10px 12px; border: 1px solid #d5dee2; border-radius: 8px; font-size: 1rem;
     font-family: inherit; box-sizing: border-box;
   }
-  .admin-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .admin-row { display: grid; grid-template-columns: 2fr 1fr auto auto; gap: 8px; align-items: center; margin-bottom: 8px; }
   .admin-row input { padding: 8px 10px; border: 1px solid #d5dee2; border-radius: 6px; font-family: inherit; }
-  .admin-row button { background: #f4dede; color: #a33; border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; }
+  .admin-row.row-hidden { opacity: 0.5; }
+  .admin-row .remove-row-btn { background: #f4dede; color: #a33; border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; }
+  .admin-row .hide-row-btn { background: #f2f0e4; color: #8a6d1f; border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; }
   .admin-add-btn { background: #eef6f4; color: var(--color-teal); border: 1px solid var(--color-teal); border-radius: 8px; padding: 8px 14px; cursor: pointer; margin-bottom: 18px; }
   .extra-page-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
   .extra-page-row label { font-weight: 500; margin: 0; flex: 1; }

@@ -137,32 +137,29 @@
 <script>
   document.getElementById("print-shabbat-btn").addEventListener("click", () => window.print());
 
-  // מתאים אוטומטית את גודל לוז השבת כדי שתמיד יכנס לדף הדפסה אחד, גם כשמוסיפים שורות בניהול
+  // מתאים אוטומטית את גודל לוז השבת כדי שתמיד יכנס לדף הדפסה אחד, גם כשמוסיפים שורות בניהול.
+  // משתמש במשתנה CSS ‎--print-scale‎ שמכפיל את גדלי הגופן/הריפוד בפועל (ראו style.css) - בניגוד
+  // ל-transform/zoom, זה משנה את גודל הפריסה בפועל ולכן משפיע נכון על חלוקת עמודים בהדפסה.
   function fitShabbatPosterToOnePage() {
     const poster = document.getElementById("shabbat-poster");
     if (!poster) return;
-    poster.style.transform = "none";
-    poster.style.width = "";
     const mmToPx = 96 / 25.4;
     const availableHeightPx = (210 - 16) * mmToPx; // A4 לרוחב, מינוס שולי @page (8 מ"מ כל צד)
-    const actualHeightPx = poster.scrollHeight;
-    if (actualHeightPx > availableHeightPx) {
-      const scale = availableHeightPx / actualHeightPx;
-      poster.style.transformOrigin = "top center";
-      poster.style.transform = `scale(${scale})`;
-      poster.style.width = `${100 / scale}%`;
-      poster.style.marginLeft = "auto";
-      poster.style.marginRight = "auto";
+    poster.style.setProperty("--print-scale", "1");
+    // כמה איטרציות (הקטנת גופן משנה מעט את היחס בין אלמנטים קבועים לטקסט, אז מתכנסים בהדרגה)
+    let scale = 1;
+    for (let i = 0; i < 4; i++) {
+      const actualHeightPx = poster.scrollHeight;
+      if (actualHeightPx <= availableHeightPx) break;
+      scale *= availableHeightPx / actualHeightPx;
+      poster.style.setProperty("--print-scale", String(scale));
     }
   }
   window.addEventListener("beforeprint", fitShabbatPosterToOnePage);
   window.addEventListener("afterprint", () => {
     const poster = document.getElementById("shabbat-poster");
     if (poster) {
-      poster.style.transform = "";
-      poster.style.width = "";
-      poster.style.marginLeft = "";
-      poster.style.marginRight = "";
+      poster.style.removeProperty("--print-scale");
     }
   });
 </script>

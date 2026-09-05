@@ -462,6 +462,7 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
   main .section { padding: 0; }
   .container { max-width: 100%; padding: 0; }
   .shabbat-poster {
+    --print-scale: 1; /* מוגדר/מעודכן ע"י JS (ראו shabbat.html) כדי שהלוז תמיד יכנס לדף אחד */
     box-shadow: none;
     max-width: 100%;
     width: 100%;
@@ -469,10 +470,21 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .shabbat-poster .parasha-header { padding: 14px 20px 10px; }
-  .shabbat-cols .col { padding: 14px 22px; }
-  .shabbat-list li { padding: 5px 0; }
-  .shabbat-shalom { padding: 10px 16px 14px; font-size: 1.3rem; }
+  .shabbat-poster .parasha-header {
+    padding: calc(14px * var(--print-scale)) calc(20px * var(--print-scale)) calc(10px * var(--print-scale));
+  }
+  .shabbat-poster .parasha-header h3 {
+    font-size: calc(1.8rem * var(--print-scale));
+    margin-bottom: calc(10px * var(--print-scale));
+    padding-bottom: calc(8px * var(--print-scale));
+  }
+  .shabbat-poster .candle-times { font-size: calc(1rem * var(--print-scale)); gap: calc(18px * var(--print-scale)); }
+  .shabbat-cols .col { padding: calc(14px * var(--print-scale)) calc(22px * var(--print-scale)); }
+  .shabbat-cols h4 { font-size: calc(1.1rem * var(--print-scale)); margin-bottom: calc(14px * var(--print-scale)); }
+  .col-divider { padding: calc(10px * var(--print-scale)) calc(14px * var(--print-scale)); }
+  .shabbat-list li { padding: calc(5px * var(--print-scale)) 0; font-size: calc(1rem * var(--print-scale)); }
+  .shabbat-footer { padding: calc(16px * var(--print-scale)); font-size: calc(0.95rem * var(--print-scale)); }
+  .shabbat-shalom { padding: calc(10px * var(--print-scale)) calc(16px * var(--print-scale)) calc(14px * var(--print-scale)); font-size: calc(1.3rem * var(--print-scale)); }
 }
 
 @media (max-width: 640px) {

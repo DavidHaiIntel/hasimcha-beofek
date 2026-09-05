@@ -143,24 +143,20 @@
   document.getElementById("print-shabbat-btn").addEventListener("click", () => window.print());
 
   // מתאים אוטומטית את גודל לוז השבת כדי שתמיד יכנס לדף הדפסה אחד, גם כשמוסיפים שורות בניהול.
-  // משתמש במשתנה CSS ‎--print-scale‎ שמכפיל את גדלי הגופן/הריפוד בפועל (ראו style.css) - בניגוד
-  // ל-transform/zoom, זה משנה את גודל הפריסה בפועל ולכן משפיע נכון על חלוקת עמודים בהדפסה.
-  // חשוב: ה-CSS מקבע את רוחב הפוסטר ל-281mm בהדפסה (רוחב A4 לרוחב בפועל, לא 100% מהמסך) -
-  // כך שמדידת הגובה כאן משקפת נכון את אופן הגלישה האמיתי בהדפסה, גם אם נמדד במסך רחב.
+  // משתמש במשתנה CSS ‎--print-scale‎ שמכפיל את גדלי הגופן/הריפוד בפועל (ראו style.css).
+  // חשוב: לא סומכים על מדידת פיקסלים (scrollHeight) בזמן ההדפסה - התברר שהתזמון של הדפדפן
+  // בין הפעלת ה-CSS של ההדפסה לבין קריאת JS לא עקבי (עבד בבדיקות אבל לא תמיד בהדפסה אמיתית).
+  // במקום זה סופרים כמה שורות יש בפועל (עובדה קבועה, לא תלוית עיצוב/תזמון) ומחשבים יחס פשוט:
+  // 8 שורות (5 ימי חול + 3 שיעורים) הן העיצוב המקורי שמתאים בדיוק לדף אחד בלי הקטנה.
+  const BASE_ROWS = 8;
   function fitShabbatPosterToOnePage() {
     const poster = document.getElementById("shabbat-poster");
     if (!poster) return;
-    const mmToPx = 96 / 25.4;
-    const availableHeightPx = (210 - 16) * mmToPx; // A4 לרוחב, מינוס שולי @page (8 מ"מ כל צד)
-    poster.style.setProperty("--print-scale", "1");
-    // כמה איטרציות (הקטנת גופן משנה מעט את היחס בין אלמנטים קבועים לטקסט, אז מתכנסים בהדרגה)
-    let scale = 1;
-    for (let i = 0; i < 4; i++) {
-      const actualHeightPx = poster.scrollHeight;
-      if (actualHeightPx <= availableHeightPx) break;
-      scale *= availableHeightPx / actualHeightPx;
-      poster.style.setProperty("--print-scale", String(scale));
-    }
+    const weekdayRows = document.querySelectorAll("#weekday-list li").length;
+    const shiurimRows = document.querySelectorAll("#shiurim-list li").length;
+    const totalRows = weekdayRows + shiurimRows;
+    const scale = totalRows <= BASE_ROWS ? 1 : BASE_ROWS / totalRows;
+    poster.style.setProperty("--print-scale", String(scale));
   }
   window.addEventListener("beforeprint", fitShabbatPosterToOnePage);
   window.addEventListener("afterprint", () => {

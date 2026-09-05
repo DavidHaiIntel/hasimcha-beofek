@@ -462,13 +462,10 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
   main .section { padding: 0; }
   .container { max-width: 100%; padding: 0; }
   .shabbat-poster {
-    --print-scale: 1; /* מוגדר/מעודכן ע"י JS (ראו shabbat.html) כדי שהלוז תמיד יכנס לדף אחד */
+    --print-scale: 1; /* מוגדר/מעודכן ע"י JS (ראו shabbat.html, לפי ספירת שורות) כדי שהלוז יכנס לדף אחד */
     box-shadow: none;
-    /* רוחב קבוע (לא 100%!) - כדי שמדידת הגובה ב-JS תשקף את רוחב ההדפסה האמיתי, לא את רוחב המסך */
-    width: 281mm;
-    max-width: 281mm;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 100%;
+    width: 100%;
     page-break-inside: avoid;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

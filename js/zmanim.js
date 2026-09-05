@@ -222,9 +222,9 @@ function formatHebrewDate(date) {
       year: "numeric",
     }).formatToParts(date);
     const day = Number(parts.find((p) => p.type === "day")?.value);
-    const month = parts.find((p) => p.type === "month")?.value;
-    const year = parts.find((p) => p.type === "year")?.value;
-    return `${toHebrewNumeral(day)} ב${month} ${year}`;
+  const month = parts.find((p) => p.type === "month")?.value;
+  const year = Number(parts.find((p) => p.type === "year")?.value);
+  return `${toHebrewNumeral(day)} ב${month} ${toHebrewYearNumeral(year)}`;
   } catch (e) {
     return "";
   }
@@ -265,10 +265,6 @@ const GREGORIAN_MONTHS = [
 const hebrewMonthNameFormatter = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
   month: "long",
 });
-const hebrewMonthYearFormatter = new Intl.DateTimeFormat("he-IL-u-ca-hebrew", {
-  month: "long",
-  year: "numeric",
-});
 
 // ממיר מספר (1-30) לאותיות עבריות (גימטריה), עם טיפול מיוחד ל-15/16
 function toHebrewNumeral(num) {
@@ -282,7 +278,27 @@ function toHebrewNumeral(num) {
   if (str.length <= 1) return str + "׳"; // geresh
   return str.slice(0, -1) + "״" + str.slice(-1); // gershayim
 }
-
+// ממיר שנה עברית מלאה (כמו 5786) לאותיות (כמו תשפ"ו) - משמיט את ספרת האלפים כמקובל
+function toHebrewYearNumeral(year) {
+  let num = year % 1000;
+  const hundredsMap = { 100: "ק", 200: "ר", 300: "ש", 400: "ת" };
+  let letters = "";
+  let hundreds = Math.floor(num / 100) * 100;
+  num %= 100;
+  while (hundreds > 0) {
+    if (hundreds >= 400) { letters += "ת"; hundreds -= 400; }
+    else { letters += hundredsMap[hundreds]; hundreds = 0; }
+  }
+  if (num === 15) { letters += "טו"; }
+  else if (num === 16) { letters += "טז"; }
+  else {
+    const tensMap = ["", "י", "כ", "ל", "מ", "נ", "ס", "ע", "פ", "צ"];
+    const onesMap = ["", "א", "ב", "ג", "ד", "ה", "ו", "ז", "ח", "ט"];
+    letters += tensMap[Math.floor(num / 10)] + onesMap[num % 10];
+  }
+  if (letters.length <= 1) return letters + "׳";
+  return letters.slice(0, -1) + "״" + letters.slice(-1);
+}
 // מזהה חודש עברי (שנה+חודש) לפי Intl, עבור תאריך גרגוריאני נתון
 function getHebrewYM(date) {
   const parts = hebrewCivilFormatter.formatToParts(date);
@@ -323,7 +339,8 @@ function renderMonthTable() {
   if (!wrap || !label) return;
 
   const days = getHebrewMonthDays(currentHebrewMonthStart);
-  label.textContent = hebrewMonthYearFormatter.format(currentHebrewMonthStart);
+  const ym = getHebrewYM(currentHebrewMonthStart);
+  label.textContent = `${hebrewMonthNameFormatter.format(currentHebrewMonthStart)} ${toHebrewYearNumeral(ym.year)}`;
 
   const today = new Date();
 

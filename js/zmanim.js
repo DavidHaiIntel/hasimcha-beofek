@@ -467,7 +467,7 @@ function calcShabbatTimes(reference = new Date()) {
   const candleLighting = new Date(fridaySun.sunset.getTime() - 29.5 * 60000);
   const shabbatEnds = saturdaySun.tzeit;
   const minchaErev = roundToNearestMinutes(
-    new Date(fridaySun.sunset.getTime() - 8 * 60000), 5
+    new Date(fridaySun.sunset.getTime() - 18 * 60000), 5
   );
   const shirHashirim = new Date(minchaErev.getTime() - 10 * 60000);
   const shacharit = isIsraelDST(saturday) ? "8:30" : "8:00";

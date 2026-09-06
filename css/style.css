@@ -239,6 +239,14 @@ a { color: inherit; }
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 22px;
 }
+/* גרסה קומפקטית (תפילות ימי חול בדף הבית) - כרטיסים צרים יותר כדי שכולם ייכנסו בשורה אחת */
+.grid-cards-compact {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+}
+.grid-cards-compact .icon { font-size: 1.5rem; margin-bottom: 6px; }
+.grid-cards-compact h4 { font-size: 0.95rem; margin-bottom: 4px; }
+.grid-cards-compact p { font-size: 0.85rem; margin-bottom: 0; }
 .info-card {
   text-align: center;
 }

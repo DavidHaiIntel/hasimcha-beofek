@@ -426,6 +426,22 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
   font-weight: 700;
   color: var(--color-navy-dark);
 }
+.shabbat-list li.note-line {
+  justify-content: center;
+  border-bottom: none;
+  padding: 3px 0;
+  color: var(--color-text-soft);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+/* גרסת 3 טורים (ליום/ימי חג עם 3 ימים, כמו ראש השנה) */
+.holiday-cols { grid-template-columns: 1fr auto 1fr auto 1fr; }
+.holiday-cols .col { padding: 20px 18px; }
+@media (max-width: 900px) {
+  .holiday-cols { grid-template-columns: 1fr; }
+  .holiday-cols .col-divider { flex-direction: row; padding: 6px 0; }
+  .holiday-cols .col-divider .divider-line { width: auto; height: 1px; flex: 1; min-height: 0; }
+}
 .shabbat-footer {
   text-align: center;
   background: #cfe6f5;

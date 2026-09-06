@@ -5,5 +5,6 @@
 const SITE_CONFIG = {
   extraPages: [
     { key: "sukkot", label: "לימוד סוכות", url: "sukkot.html", enabled: true },
+    { key: "rosh-hashana", label: "ראש השנה", url: "rosh-hashana.html", enabled: true },
   ],
 };

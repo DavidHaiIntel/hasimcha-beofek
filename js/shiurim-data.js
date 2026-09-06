@@ -4,5 +4,5 @@
 const SHIURIM_LIST = [
   { label: "שני - שיעור תנ\"ך, הרב דוד אסולין", time: "21:15", hidden: false },
   { label: "רביעי - שיעור בכתבי הרב קוק, הרב אסף", time: "21:15", hidden: false },
-  { label: "חמישי - שיעור כוזרי לנוער, ירון יארק", time: "20:00", hidden: false },
+  { label: "חמישי - שיעור כוזרי לנוער, ירון יאראק", time: "20:00", hidden: false },
 ];

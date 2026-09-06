@@ -1,4 +1,24 @@
 // תפריט נייד ושנה נוכחית בפוטר
+
+// ממיין שורות (label/time/hidden) לפי שעה עולה. שורת הערה בלי שעה (כמו "מוסף")
+// מקבלת את אותו "מפתח מיון" של השורה הקודמת עם שעה, כדי שתישאר צמודה לה במקומה.
+function sortRowsByTime(rows) {
+  function toMinutes(t) {
+    if (!t) return null;
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + (m || 0);
+  }
+  let lastKey = -1;
+  return rows
+    .map((row, i) => {
+      const key = toMinutes(row.time);
+      if (key !== null) lastKey = key;
+      return { row, i, key: key !== null ? key : lastKey };
+    })
+    .sort((a, b) => a.key - b.key || a.i - b.i)
+    .map((x) => x.row);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const toggle = document.querySelector(".nav-toggle");
   const nav = document.querySelector(".main-nav");
@@ -28,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".rh-columns").forEach((container) => {
       const divider = `<div class="col-divider" aria-hidden="true"><span class="ornament-tip">❦</span><span class="divider-line"></span><span class="divider-dot"></span><span class="divider-line"></span><span class="ornament-tip">❦</span></div>`;
       const cols = ROSH_HASHANA_DATA.days.map((day) => {
-        const items = day.rows
+        const items = sortRowsByTime(day.rows)
           .filter((r) => !r.hidden)
           .map((r) => r.time
             ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`

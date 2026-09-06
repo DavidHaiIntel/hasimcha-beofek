@@ -233,7 +233,7 @@ function parseRoshHashanaFromJs(jsText) {
 
 function buildRoshHashanaDataJs(title, days) {
   const daysJs = days.map((day) => {
-    const rowsJs = day.rows
+    const rowsJs = sortRowsByTime(day.rows)
       .map((r) => `        { label: "${r.label.replace(/"/g, '\\"')}", time: "${r.time}", hidden: ${r.hidden} },`)
       .join("\n");
     return `    {\n      label: "${day.label.replace(/"/g, '\\"')}",\n      rows: [\n${rowsJs}\n      ],\n    },`;

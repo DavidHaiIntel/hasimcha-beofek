@@ -106,6 +106,10 @@ a { color: inherit; }
   gap: 4px;
   flex-wrap: wrap;
 }
+/* הספן שבתוכו מוזרקים קישורי "דפים נוספים" (SITE_CONFIG) - display:contents כדי
+   שהקישורים עצמם ישתתפו ישירות בפריסת ה-flex של הניווט (עם אותו gap/יישור), ולא
+   יתקבצו יחד בתא אחד נפרד שגורם לבלגן/חוסר יישור כשהניווט נשבר לכמה שורות */
+#extra-nav-links { display: contents; }
 .main-nav a {
   text-decoration: none;
   color: var(--color-navy);

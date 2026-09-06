@@ -122,6 +122,26 @@ function calcSunTimes(year, month, day, lat, lon) {
   };
 }
 
+// ===== בניית תאריך מדויק לפי שעה בישראל (לא לפי אזור הזמן של המכשיר של המשתמש!) =====
+// חשוב למי שגולש מחו"ל/עם שעון מכשיר לא-ישראלי - בלי זה, שעות ההנץ היו מוצגות לפי ההיסט הלא נכון.
+const israelGregorianFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: NETIVOT.timeZone,
+  year: "numeric", month: "2-digit", day: "2-digit",
+});
+function israelOffsetMinutes(referenceDate) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: NETIVOT.timeZone,
+    timeZoneName: "shortOffset",
+  }).formatToParts(referenceDate);
+  const m = (parts.find((p) => p.type === "timeZoneName")?.value || "GMT+2").match(/GMT([+-]\d+)/);
+  return (m ? Number(m[1]) : 2) * 60;
+}
+function israelTimeToDate(referenceDate, hour, minute, second) {
+  const [y, mo, d] = israelGregorianFormatter.format(referenceDate).split("-").map(Number);
+  const utcMs = Date.UTC(y, mo - 1, d, hour, minute, second) - israelOffsetMinutes(referenceDate) * 60000;
+  return new Date(utcMs);
+}
+
 // מחפש את זמן ההנץ בטבלת הנתונים האמיתית שנמשכה מלוח "חי" (NETZ_DATA), לפי תאריך עברי
 function getHanetzFromRealData(date) {
   if (typeof NETZ_DATA === "undefined") return null;
@@ -132,9 +152,7 @@ function getHanetzFromRealData(date) {
   const timeStr = NETZ_DATA[year]?.[month]?.[day - 1];
   if (!timeStr) return null;
   const [h, m, s] = timeStr.split(":").map(Number);
-  const result = new Date(date);
-  result.setHours(h, m, s, 0);
-  return result;
+  return israelTimeToDate(date, h, m, s);
 }
 
 // מחזיר את זמני ההנץ ותחילת התפילה עבור אובייקט Date נתון
@@ -173,14 +191,24 @@ const FIXED_TEFILA_DAYS = [
 ];
 
 const hebrewCivilFormatter = new Intl.DateTimeFormat("en-u-ca-hebrew", {
+  timeZone: NETIVOT.timeZone,
   day: "numeric",
   month: "numeric",
   year: "numeric",
 });
 
+// בודק את יום השבוע לפי אזור הזמן של נתיבות (לא לפי אזור הזמן של המכשיר!) - חשוב סביב חצות
+const israelWeekdayFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: NETIVOT.timeZone,
+  weekday: "short",
+});
+function isShabbatInIsrael(date) {
+  return israelWeekdayFormatter.format(date) === "Sat";
+}
+
 // מחזיר את פרטי היום: שבת, יום טוב (ללא ותיקין), ותפילה בשעה קבועה (אם יש)
 function getDayStatus(date) {
-  const isShabbat = date.getDay() === 6;
+  const isShabbat = isShabbatInIsrael(date);
   let yomTov = null;
   let fixedTefila = null;
   try {

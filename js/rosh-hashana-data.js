@@ -30,8 +30,8 @@ const ROSH_HASHANA_DATA = {
       label: "ראשון, ב' תשרי",
       rows: [
         { label: "שחרית בנץ (עדות המזרח)", time: "5:30", hidden: false },
+        { label: "תקיעות משוער", time: "7:25", hidden: false },
         { label: "שחרית (אשכנזי)", time: "7:30", hidden: false },
-        { label: "תקיעות שופר - משוער", time: "7:30", hidden: false },
         { label: "קידוש (משוער)", time: "9:30", hidden: false },
         { label: "תקיעות שופר", time: "9:45", hidden: false },
         { label: "מוסף", time: "", hidden: false },

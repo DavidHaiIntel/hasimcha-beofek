@@ -211,6 +211,45 @@ ${list}
 `;
 }
 
+// ===== לוח ראש השנה (js/rosh-hashana-data.js) - כותרת + 3 עמודות (ימים), כל אחת עם שורות =====
+async function fetchLiveRoshHashanaDataJs() {
+  const resp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/rosh-hashana-data.js?t=${Date.now()}`
+  );
+  if (!resp.ok) throw new Error("לא הצלחתי לטעון את לוח ראש השנה מ-GitHub");
+  return resp.text();
+}
+
+function parseRoshHashanaFromJs(jsText) {
+  const match = jsText.match(/ROSH_HASHANA_DATA\s*=\s*(\{[\s\S]*?\n\});/);
+  if (!match) return { title: "", days: [{ label: "", rows: [] }, { label: "", rows: [] }, { label: "", rows: [] }] };
+  try {
+    // eslint-disable-next-line no-new-func
+    return Function(`"use strict"; return (${match[1]});`)();
+  } catch (e) {
+    return { title: "", days: [{ label: "", rows: [] }, { label: "", rows: [] }, { label: "", rows: [] }] };
+  }
+}
+
+function buildRoshHashanaDataJs(title, days) {
+  const daysJs = days.map((day) => {
+    const rowsJs = day.rows
+      .map((r) => `        { label: "${r.label.replace(/"/g, '\\"')}", time: "${r.time}", hidden: ${r.hidden} },`)
+      .join("\n");
+    return `    {\n      label: "${day.label.replace(/"/g, '\\"')}",\n      rows: [\n${rowsJs}\n      ],\n    },`;
+  }).join("\n");
+  return `/* ===== לוח זמני ראש השנה - נערך מעמוד הניהול (admin.html) =====
+   מוצג הן בדף ראש השנה (rosh-hashana.html) והן בדף שבת (shabbat.html, כשהשבת הקרובה היא א' תשרי).
+   כל יום הוא עמודה בפוסטר. שורה בלי time (מחרוזת ריקה) מוצגת כשורת הערה בלי שעה (כמו "מוסף"). */
+const ROSH_HASHANA_DATA = {
+  title: "${title.replace(/"/g, '\\"')}",
+  days: [
+${daysJs}
+  ],
+};
+`;
+}
+
 function parseExtraPagesFromJs(jsText) {
   const match = jsText.match(/extraPages:\s*(\[[\s\S]*?\])\s*,?\s*\};/);
   if (!match) return [];
@@ -416,6 +455,15 @@ async function loadIntoForm() {
   document.getElementById("shiurim-rows").innerHTML = "";
   parseShiurimFromJs(shiurimJs).forEach((r) => addRow("shiurim-rows", r.label, r.time, r.hidden));
 
+  const rhJs = await fetchLiveRoshHashanaDataJs();
+  const rhData = parseRoshHashanaFromJs(rhJs);
+  document.getElementById("rh-title-input").value = rhData.title;
+  [0, 1, 2].forEach((i) => {
+    document.getElementById(`rh-day${i}-label`).value = rhData.days[i]?.label || "";
+    document.getElementById(`rh-day${i}-rows`).innerHTML = "";
+    (rhData.days[i]?.rows || []).forEach((r) => addRow(`rh-day${i}-rows`, r.label, r.time, r.hidden));
+  });
+
   const configJs = await fetchLiveSiteConfigJs();
   renderExtraPagesForm(parseExtraPagesFromJs(configJs));
 
@@ -456,6 +504,20 @@ async function saveToGithub() {
       "js/shiurim-data.js",
       () => buildShiurimDataJs(getRows("shiurim-rows")),
       `עדכון שיעורי תורה`,
+      token
+    );
+
+    await saveFileToGithub(
+      "js/rosh-hashana-data.js",
+      () => {
+        const title = document.getElementById("rh-title-input").value.trim();
+        const days = [0, 1, 2].map((i) => ({
+          label: document.getElementById(`rh-day${i}-label`).value.trim(),
+          rows: getRows(`rh-day${i}-rows`),
+        }));
+        return buildRoshHashanaDataJs(title, days);
+      },
+      `עדכון לוח ראש השנה`,
       token
     );
 

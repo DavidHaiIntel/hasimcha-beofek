@@ -19,6 +19,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // לוח ראש השנה (js/rosh-hashana-data.js) - מוצג בדף ראש השנה ובדף שבת (כשרלוונטי) מאותו מקור,
+  // כדי שעריכה בניהול תשתקף בשני המקומות יחד
+  if (typeof ROSH_HASHANA_DATA !== "undefined") {
+    document.querySelectorAll(".rh-title").forEach((el) => {
+      el.textContent = ROSH_HASHANA_DATA.title;
+    });
+    document.querySelectorAll(".rh-columns").forEach((container) => {
+      const divider = `<div class="col-divider" aria-hidden="true"><span class="ornament-tip">❦</span><span class="divider-line"></span><span class="divider-dot"></span><span class="divider-line"></span><span class="ornament-tip">❦</span></div>`;
+      const cols = ROSH_HASHANA_DATA.days.map((day) => {
+        const items = day.rows
+          .filter((r) => !r.hidden)
+          .map((r) => r.time
+            ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+            : `<li class="note-line"><span>${r.label}</span></li>`)
+          .join("");
+        return `<div class="col"><h4>${day.label}</h4><ul class="shabbat-list">${items}</ul></div>`;
+      });
+      container.innerHTML = cols.join(divider);
+    });
+  }
+
   // בניית קישורי הניווט לדפים נוספים (מנוהלים דרך עמוד הניהול, ב-SITE_CONFIG) - וחסימת תוכן דף כבוי
   if (typeof SITE_CONFIG !== "undefined") {
     const currentPage = location.pathname.split("/").pop();

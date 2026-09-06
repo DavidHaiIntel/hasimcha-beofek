@@ -136,6 +136,35 @@
         </fieldset>
 
         <fieldset>
+          <legend>לוח ראש השנה</legend>
+          <p class="admin-help">מוצג בדף "ראש השנה" ובדף השבת (אוטומטית, כשהשבת הקרובה חלה בא' תשרי). שורה עם שדה שעה ריק מוצגת כשורת הערה בלי שעה (כמו "מוסף").</p>
+          <div class="admin-field">
+            <label for="rh-title-input">כותרת (למשל: ראש השנה תשפ"ז)</label>
+            <input type="text" id="rh-title-input">
+          </div>
+          <div class="admin-field">
+            <label for="rh-day0-label">כותרת עמודה 1 (למשל: שישי, כ"ט אלול)</label>
+            <input type="text" id="rh-day0-label">
+          </div>
+          <div id="rh-day0-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="rh-day0-rows">+ הוסף שורה</button>
+
+          <div class="admin-field" style="margin-top:16px;">
+            <label for="rh-day1-label">כותרת עמודה 2 (למשל: שבת, א' תשרי)</label>
+            <input type="text" id="rh-day1-label">
+          </div>
+          <div id="rh-day1-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="rh-day1-rows">+ הוסף שורה</button>
+
+          <div class="admin-field" style="margin-top:16px;">
+            <label for="rh-day2-label">כותרת עמודה 3 (למשל: ראשון, ב' תשרי)</label>
+            <input type="text" id="rh-day2-label">
+          </div>
+          <div id="rh-day2-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="rh-day2-rows">+ הוסף שורה</button>
+        </fieldset>
+
+        <fieldset>
           <legend>עמוד הקהילה (הנהלה)</legend>
           <p class="admin-help">עריכת קבוצות הנהלה (רב, ועדים, גבאים) שמופיעות בעמוד "הקהילה" באתר.</p>
           <div id="committee-groups"></div>
@@ -160,8 +189,8 @@
   </div>
 </footer>
 
-<script src="js/site-config.js?v=3"></script>
-<script src="js/common.js?v=3"></script>
-<script src="js/admin.js?v=3"></script>
+<script src="js/site-config.js?v=4"></script>
+<script src="js/common.js?v=4"></script>
+<script src="js/admin.js?v=4"></script>
 </body>
 </html>

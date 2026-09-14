@@ -536,8 +536,10 @@ async function renderParashaName() {
     const resp = await fetch(url);
     const data = await resp.json();
     const parashaItem = (data.items || []).find((i) => i.category === "parashat");
+    // "שבת מיוחדת" (שובה/הגדול/חזון/זכור/פרה/החודש) - מסומנת ב-Hebcal כפריט נפרד באותו תאריך
+    const specialShabbat = (data.items || []).find((i) => i.category === "holiday" && i.subcat === "shabbat");
     if (parashaItem?.hebrew) {
-      el.textContent = "שבת " + parashaItem.hebrew;
+      el.textContent = "שבת " + parashaItem.hebrew + (specialShabbat?.hebrew ? " - " + specialShabbat.hebrew : "");
     }
   } catch (e) {
     // אם אין רשת/ה-API לא זמין - נשאר השם הקבוע שכתוב בקובץ כברירת מחדל

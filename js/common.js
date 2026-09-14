@@ -39,6 +39,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // לוח צום גדליה (js/gedalia-data.js) - מוצג בדף Gedalia.html
+  if (typeof GEDALIA_DATA !== "undefined") {
+    document.querySelectorAll(".gedalia-title").forEach((el) => {
+      el.textContent = GEDALIA_DATA.title;
+    });
+    document.querySelectorAll(".js-gedalia-list").forEach((ul) => {
+      ul.innerHTML = sortRowsByTime(GEDALIA_DATA.rows)
+        .filter((r) => !r.hidden)
+        .map((r) => r.time
+          ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+          : `<li class="note-line"><span>${r.label}</span></li>`)
+        .join("");
+    });
+  }
+
   // לוח ראש השנה (js/rosh-hashana-data.js) - מוצג בדף ראש השנה ובדף שבת (כשרלוונטי) מאותו מקור,
   // כדי שעריכה בניהול תשתקף בשני המקומות יחד
   if (typeof ROSH_HASHANA_DATA !== "undefined") {

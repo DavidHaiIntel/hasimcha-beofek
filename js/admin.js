@@ -211,6 +211,41 @@ ${list}
 `;
 }
 
+// ===== צום גדליה (js/gedalia-data.js) - כותרת + רשימת שורות, מוצג בדף Gedalia.html =====
+async function fetchLiveGedaliaDataJs() {
+  const resp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/gedalia-data.js?t=${Date.now()}`
+  );
+  if (!resp.ok) throw new Error("לא הצלחתי לטעון את לוח צום גדליה מ-GitHub");
+  return resp.text();
+}
+
+function parseGedaliaFromJs(jsText) {
+  const match = jsText.match(/GEDALIA_DATA\s*=\s*(\{[\s\S]*?\n\});/);
+  if (!match) return { title: "צום גדליה", rows: [] };
+  try {
+    // eslint-disable-next-line no-new-func
+    return Function(`"use strict"; return (${match[1]});`)();
+  } catch (e) {
+    return { title: "צום גדליה", rows: [] };
+  }
+}
+
+function buildGedaliaDataJs(title, rows) {
+  const list = sortRowsByTime(rows)
+    .map((r) => `    { label: "${r.label.replace(/"/g, '\\"')}", time: "${r.time}", hidden: ${r.hidden} },`)
+    .join("\n");
+  return `/* ===== לוח צום גדליה - נערך מעמוד הניהול (admin.html) =====
+   מוצג בדף Gedalia.html. שורה בלי time (מחרוזת ריקה) מוצגת כשורת הערה בלי שעה. */
+const GEDALIA_DATA = {
+  title: "${title.replace(/"/g, '\\"')}",
+  rows: [
+${list}
+  ],
+};
+`;
+}
+
 // ===== לוח ראש השנה (js/rosh-hashana-data.js) - כותרת + 3 עמודות (ימים), כל אחת עם שורות =====
 async function fetchLiveRoshHashanaDataJs() {
   const resp = await fetch(
@@ -464,6 +499,12 @@ async function loadIntoForm() {
     (rhData.days[i]?.rows || []).forEach((r) => addRow(`rh-day${i}-rows`, r.label, r.time, r.hidden));
   });
 
+  const gedaliaJs = await fetchLiveGedaliaDataJs();
+  const gedaliaData = parseGedaliaFromJs(gedaliaJs);
+  document.getElementById("gedalia-title-input").value = gedaliaData.title;
+  document.getElementById("gedalia-rows").innerHTML = "";
+  gedaliaData.rows.forEach((r) => addRow("gedalia-rows", r.label, r.time, r.hidden));
+
   const configJs = await fetchLiveSiteConfigJs();
   renderExtraPagesForm(parseExtraPagesFromJs(configJs));
 
@@ -518,6 +559,16 @@ async function saveToGithub() {
         return buildRoshHashanaDataJs(title, days);
       },
       `עדכון לוח ראש השנה`,
+      token
+    );
+
+    await saveFileToGithub(
+      "js/gedalia-data.js",
+      () => {
+        const title = document.getElementById("gedalia-title-input").value.trim();
+        return buildGedaliaDataJs(title, getRows("gedalia-rows"));
+      },
+      `עדכון לוח צום גדליה`,
       token
     );
 

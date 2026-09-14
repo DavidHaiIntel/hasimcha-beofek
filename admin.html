@@ -107,6 +107,13 @@
             <input type="text" id="new-page-slug" placeholder="lel-iyun.html">
           </div>
           <div class="admin-field">
+            <label for="new-page-type">סוג הדף</label>
+            <select id="new-page-type">
+              <option value="text">טקסט חופשי</option>
+              <option value="schedule">לוח זמנים (כותרת + שורות שעה, ניתן לערוך מלא מכאן)</option>
+            </select>
+          </div>
+          <div class="admin-field" id="new-page-body-wrap">
             <label for="new-page-body">תוכן הדף (כל פסקה בשורה נפרדת, עם שורה ריקה ביניהן)</label>
             <textarea id="new-page-body" rows="6" style="width:100%; padding:10px 12px; border:1px solid #d5dee2; border-radius:8px; font-family:inherit; box-sizing:border-box;"></textarea>
           </div>
@@ -164,16 +171,7 @@
           <button type="button" class="admin-add-btn" data-target="rh-day2-rows">+ הוסף שורה</button>
         </fieldset>
 
-        <fieldset>
-          <legend>לוח צום גדליה</legend>
-          <p class="admin-help">מוצג בדף "צום גדליה" (Gedalia.html). שורה עם שדה שעה ריק מוצגת כשורת הערה בלי שעה.</p>
-          <div class="admin-field">
-            <label for="gedalia-title-input">כותרת (למשל: צום גדליה)</label>
-            <input type="text" id="gedalia-title-input">
-          </div>
-          <div id="gedalia-rows"></div>
-          <button type="button" class="admin-add-btn" data-target="gedalia-rows">+ הוסף שורה</button>
-        </fieldset>
+        <div id="schedule-pages-container"></div>
 
         <fieldset>
           <legend>עמוד הקהילה (הנהלה)</legend>
@@ -200,8 +198,8 @@
   </div>
 </footer>
 
-<script src="js/site-config.js?v=6"></script>
-<script src="js/common.js?v=6"></script>
-<script src="js/admin.js?v=6"></script>
+<script src="js/site-config.js?v=7"></script>
+<script src="js/common.js?v=7"></script>
+<script src="js/admin.js?v=7"></script>
 </body>
 </html>

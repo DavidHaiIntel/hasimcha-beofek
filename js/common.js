@@ -39,13 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // לוח צום גדליה (js/gedalia-data.js) - מוצג בדף Gedalia.html
-  if (typeof GEDALIA_DATA !== "undefined") {
-    document.querySelectorAll(".gedalia-title").forEach((el) => {
-      el.textContent = GEDALIA_DATA.title;
+  // "דף לוח זמנים" גנרי (כותרת + שורות שעות, כמו צום גדליה) - נטען דרך SCHEDULE_DATA
+  // (כל דף כזה טוען את קובץ הנתונים שלו לבד, אין התנגשות בשימוש בשם משתנה אחד גנרי)
+  if (typeof SCHEDULE_DATA !== "undefined") {
+    document.querySelectorAll(".schedule-title").forEach((el) => {
+      el.textContent = SCHEDULE_DATA.title;
     });
-    document.querySelectorAll(".js-gedalia-list").forEach((ul) => {
-      ul.innerHTML = sortRowsByTime(GEDALIA_DATA.rows)
+    document.querySelectorAll(".js-schedule-list").forEach((ul) => {
+      ul.innerHTML = sortRowsByTime(SCHEDULE_DATA.rows)
         .filter((r) => !r.hidden)
         .map((r) => r.time
           ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`

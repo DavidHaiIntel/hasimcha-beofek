@@ -211,39 +211,87 @@ ${list}
 `;
 }
 
-// ===== צום גדליה (js/gedalia-data.js) - כותרת + רשימת שורות, מוצג בדף Gedalia.html =====
-async function fetchLiveGedaliaDataJs() {
+// ===== "דף לוח זמנים" גנרי (כותרת + רשימת שורות) - לכל דף עם schedule:true ב-SITE_CONFIG =====
+// (כמו צום גדליה, וכל דף עתידי מסוג זה שנוצר דרך "הוסף דף חדש" למטה)
+async function fetchLiveScheduleDataJs(dataFile) {
   const resp = await fetch(
-    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/gedalia-data.js?t=${Date.now()}`
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${dataFile}?t=${Date.now()}`
   );
-  if (!resp.ok) throw new Error("לא הצלחתי לטעון את לוח צום גדליה מ-GitHub");
+  if (!resp.ok) throw new Error(`לא הצלחתי לטעון את ${dataFile} מ-GitHub`);
   return resp.text();
 }
 
-function parseGedaliaFromJs(jsText) {
-  const match = jsText.match(/GEDALIA_DATA\s*=\s*(\{[\s\S]*?\n\});/);
-  if (!match) return { title: "צום גדליה", rows: [] };
+function parseScheduleDataJs(jsText) {
+  const match = jsText.match(/SCHEDULE_DATA\s*=\s*(\{[\s\S]*?\n\});/);
+  if (!match) return { title: "", rows: [] };
   try {
     // eslint-disable-next-line no-new-func
     return Function(`"use strict"; return (${match[1]});`)();
   } catch (e) {
-    return { title: "צום גדליה", rows: [] };
+    return { title: "", rows: [] };
   }
 }
 
-function buildGedaliaDataJs(title, rows) {
+function buildScheduleDataJs(title, rows) {
   const list = sortRowsByTime(rows)
     .map((r) => `    { label: "${r.label.replace(/"/g, '\\"')}", time: "${r.time}", hidden: ${r.hidden} },`)
     .join("\n");
-  return `/* ===== לוח צום גדליה - נערך מעמוד הניהול (admin.html) =====
-   מוצג בדף Gedalia.html. שורה בלי time (מחרוזת ריקה) מוצגת כשורת הערה בלי שעה. */
-const GEDALIA_DATA = {
+  return `/* ===== לוח זמנים - נערך מעמוד הניהול (admin.html) =====
+   שורה בלי time (מחרוזת ריקה) מוצגת כשורת הערה בלי שעה. */
+const SCHEDULE_DATA = {
   title: "${title.replace(/"/g, '\\"')}",
   rows: [
 ${list}
   ],
 };
 `;
+}
+
+// יוצר בטופס הניהול, בזמן אמת, את הפיסקה (fieldset) לעריכת דף לוח-זמנים אחד
+function addSchedulePageFieldset(page, data = { title: "", rows: [] }) {
+  const container = document.getElementById("schedule-pages-container");
+  const rowsId = `sched-${page.key}-rows`;
+  const fieldset = document.createElement("fieldset");
+  fieldset.className = "schedule-page-fieldset";
+  fieldset.dataset.key = page.key;
+  fieldset.dataset.dataFile = page.dataFile;
+  fieldset.dataset.rowsId = rowsId;
+  fieldset.innerHTML = `
+    <legend>לוח: ${page.label} (${page.url})</legend>
+    <div class="admin-field">
+      <label>כותרת הלוח</label>
+      <input type="text" class="sched-title-input" value="${(data.title || page.label).replace(/"/g, "&quot;")}">
+    </div>
+    <div id="${rowsId}"></div>
+    <button type="button" class="admin-add-btn sched-add-row-btn">+ הוסף שורה</button>
+  `;
+  fieldset.querySelector(".sched-add-row-btn").addEventListener("click", () => addRow(rowsId));
+  container.appendChild(fieldset);
+  (data.rows || []).forEach((r) => addRow(rowsId, r.label, r.time, r.hidden));
+}
+
+// טוען לטופס את כל דפי "לוח הזמנים" הרשומים כרגע ב-SITE_CONFIG (schedule:true)
+async function renderSchedulePagesForm(extraPages) {
+  const container = document.getElementById("schedule-pages-container");
+  container.innerHTML = "";
+  for (const page of extraPages.filter((p) => p.schedule)) {
+    let data = { title: page.label, rows: [] };
+    try {
+      data = parseScheduleDataJs(await fetchLiveScheduleDataJs(page.dataFile));
+    } catch (e) {
+      // דף שנוצר הרגע וטרם נשמר - יתחיל ריק
+    }
+    addSchedulePageFieldset(page, data);
+  }
+}
+
+function getSchedulePagesFromForm() {
+  return Array.from(document.querySelectorAll(".schedule-page-fieldset")).map((fieldset) => ({
+    key: fieldset.dataset.key,
+    dataFile: fieldset.dataset.dataFile,
+    title: fieldset.querySelector(".sched-title-input").value.trim(),
+    rows: getRows(fieldset.dataset.rowsId),
+  }));
 }
 
 // ===== לוח ראש השנה (js/rosh-hashana-data.js) - כותרת + 3 עמודות (ימים), כל אחת עם שורות =====
@@ -304,12 +352,17 @@ function renderExtraPagesForm(pages) {
     row.className = "extra-page-row";
     row.dataset.key = p.key;
     row.dataset.url = p.url;
+    row.dataset.schedule = p.schedule ? "true" : "false";
+    row.dataset.dataFile = p.dataFile || "";
     row.innerHTML = `
       <input type="checkbox" class="extra-page-enabled" id="extra-${p.key}" ${p.enabled ? "checked" : ""}>
       <label for="extra-${p.key}">${p.label} (${p.url})</label>
       <button type="button" class="remove-page-btn">מחק דף</button>
     `;
-    row.querySelector(".remove-page-btn").addEventListener("click", () => row.remove());
+    row.querySelector(".remove-page-btn").addEventListener("click", () => {
+      row.remove();
+      document.querySelector(`.schedule-page-fieldset[data-key="${p.key}"]`)?.remove();
+    });
     container.appendChild(row);
   });
 }
@@ -320,12 +373,17 @@ function getExtraPagesFromForm() {
     url: row.dataset.url,
     label: row.querySelector("label").textContent.replace(/\s*\([^)]*\)\s*$/, ""),
     enabled: row.querySelector(".extra-page-enabled").checked,
+    schedule: row.dataset.schedule === "true",
+    dataFile: row.dataset.dataFile || undefined,
   }));
 }
 
 function buildSiteConfigJs(pages) {
   const list = pages
-    .map((p) => `    { key: "${p.key}", label: "${p.label}", url: "${p.url}", enabled: ${p.enabled} },`)
+    .map((p) => {
+      const extra = p.schedule ? `, schedule: true, dataFile: "${p.dataFile}"` : "";
+      return `    { key: "${p.key}", label: "${p.label}", url: "${p.url}", enabled: ${p.enabled}${extra} },`;
+    })
     .join("\n");
   return `/* ===== הגדרות אתר - אילו "דפים נוספים" (זמניים/עונתיים) פעילים כרגע =====
    הדפים הקבועים (בית / זמני תפילה / שבת קודש) תמיד מוצגים ולא ניתנים לכיבוי.
@@ -345,12 +403,17 @@ function addExtraPageRow(page) {
   row.className = "extra-page-row";
   row.dataset.key = page.key;
   row.dataset.url = page.url;
+  row.dataset.schedule = page.schedule ? "true" : "false";
+  row.dataset.dataFile = page.dataFile || "";
   row.innerHTML = `
     <input type="checkbox" class="extra-page-enabled" id="extra-${page.key}" checked>
     <label for="extra-${page.key}">${page.label} (${page.url})</label>
     <button type="button" class="remove-page-btn">מחק דף</button>
   `;
-  row.querySelector(".remove-page-btn").addEventListener("click", () => row.remove());
+  row.querySelector(".remove-page-btn").addEventListener("click", () => {
+    row.remove();
+    document.querySelector(`.schedule-page-fieldset[data-key="${page.key}"]`)?.remove();
+  });
   container.appendChild(row);
 }
 
@@ -427,6 +490,74 @@ ${paragraphs}
 `;
 }
 
+// בונה HTML מלא ל"דף לוח זמנים" חדש (כותרת + שורות שעות, ניתן לעריכה מלאה מהניהול)
+function buildNewSchedulePageHtml(title, dataFile) {
+  return `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title} | השמחה שבאופק</title>
+<link rel="icon" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html">
+      <img src="images/logo.png" alt="לוגו קהילת אוהב ישראל">
+      <div class="brand-text">
+        <h1>בית הכנסת השמחה שבאופק</h1>
+        <p>קהילת אוהב ישראל | נתיבות</p>
+      </div>
+    </a>
+    <button class="nav-toggle" aria-label="פתח תפריט">&#9776;</button>
+    <nav class="main-nav">
+      <a href="index.html">בית</a>
+      <a href="zmanim.html">זמני תפילה</a>
+      <a href="shabbat.html">שבת קודש</a>
+      <span id="extra-nav-links"></span>
+      <a href="about.html">הקהילה</a>
+      <a href="donations.html">תרומות</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container" style="max-width:800px;">
+      <h2 style="text-align:center;" class="schedule-title"></h2>
+      <ul class="shabbat-list js-schedule-list" style="max-width:400px; margin:20px auto 0;"></ul>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p><strong>בית כנסת "השמחה שבאופק"</strong> ע"ש שמחה חלילי ואופק חלילי ז"ל</p>
+    <p>ומרכז קהילתי "אוהב ישראל" ע"ש הרב ישראל פרידמן בן שלום זצ"ל</p>
+    <p class="address">רח' קטיף 36, נתיבות</p>
+    <div class="footer-qr">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=https%3A%2F%2Fdavidhaiintel.github.io%2Fhasimcha-beofek%2Findex.html" alt="קוד QR לאתר">
+      <span>סרקו להגעה לאתר</span>
+    </div>
+    <p>&copy; <span id="current-year"></span> קהילת אוהב ישראל</p>
+    <p class="admin-link"><a href="admin.html">ניהול</a></p>
+  </div>
+</footer>
+
+<script src="js/site-config.js"></script>
+<script src="${dataFile}"></script>
+<script src="js/common.js"></script>
+</body>
+</html>
+`;
+}
+
 // יוצר קובץ חדש ב-GitHub (PUT ללא sha - כי הקובץ עדיין לא קיים)
 async function createFileOnGithub(path, content, commitMessage, token) {
   const resp = await fetch(
@@ -452,6 +583,7 @@ async function createNewPage() {
   const title = document.getElementById("new-page-title").value.trim();
   let slug = document.getElementById("new-page-slug").value.trim();
   const body = document.getElementById("new-page-body").value.trim();
+  const pageType = document.getElementById("new-page-type").value;
   const msgEl = document.getElementById("create-page-msg");
   const showMsg2 = (text, ok) => {
     msgEl.style.display = "block";
@@ -467,10 +599,21 @@ async function createNewPage() {
 
   showMsg2("יוצר דף...", true);
   try {
-    const html = buildNewPageHtml(title, body || "");
-    await createFileOnGithub(slug, html, `יצירת דף חדש: ${title}`, token);
-    addExtraPageRow({ key, label: title, url: slug });
-    showMsg2(`הדף "${title}" נוצר! לחצו על "שמור ופרסם באתר" למטה כדי להוסיף אותו לניווט.`, true);
+    if (pageType === "schedule") {
+      const dataFile = `js/${key}-data.js`;
+      const html = buildNewSchedulePageHtml(title, dataFile);
+      await createFileOnGithub(slug, html, `יצירת דף חדש: ${title}`, token);
+      await createFileOnGithub(dataFile, buildScheduleDataJs(title, []), `יצירת לוח זמנים: ${title}`, token);
+      const page = { key, label: title, url: slug, schedule: true, dataFile };
+      addExtraPageRow(page);
+      addSchedulePageFieldset(page, { title, rows: [] });
+      showMsg2(`הדף "${title}" נוצר! אפשר כבר להוסיף שורות שעה בסעיף "${title}" למטה, ואז ללחוץ "שמור ופרסם באתר".`, true);
+    } else {
+      const html = buildNewPageHtml(title, body || "");
+      await createFileOnGithub(slug, html, `יצירת דף חדש: ${title}`, token);
+      addExtraPageRow({ key, label: title, url: slug });
+      showMsg2(`הדף "${title}" נוצר! לחצו על "שמור ופרסם באתר" למטה כדי להוסיף אותו לניווט.`, true);
+    }
     document.getElementById("new-page-title").value = "";
     document.getElementById("new-page-slug").value = "";
     document.getElementById("new-page-body").value = "";
@@ -499,14 +642,10 @@ async function loadIntoForm() {
     (rhData.days[i]?.rows || []).forEach((r) => addRow(`rh-day${i}-rows`, r.label, r.time, r.hidden));
   });
 
-  const gedaliaJs = await fetchLiveGedaliaDataJs();
-  const gedaliaData = parseGedaliaFromJs(gedaliaJs);
-  document.getElementById("gedalia-title-input").value = gedaliaData.title;
-  document.getElementById("gedalia-rows").innerHTML = "";
-  gedaliaData.rows.forEach((r) => addRow("gedalia-rows", r.label, r.time, r.hidden));
-
   const configJs = await fetchLiveSiteConfigJs();
-  renderExtraPagesForm(parseExtraPagesFromJs(configJs));
+  const extraPages = parseExtraPagesFromJs(configJs);
+  renderExtraPagesForm(extraPages);
+  await renderSchedulePagesForm(extraPages);
 
   const aboutHtml = await fetchLiveAboutHtml();
   renderCommitteeForm(parseCommitteeFromHtml(aboutHtml));
@@ -562,15 +701,15 @@ async function saveToGithub() {
       token
     );
 
-    await saveFileToGithub(
-      "js/gedalia-data.js",
-      () => {
-        const title = document.getElementById("gedalia-title-input").value.trim();
-        return buildGedaliaDataJs(title, getRows("gedalia-rows"));
-      },
-      `עדכון לוח צום גדליה`,
-      token
-    );
+    // כל "דפי לוח הזמנים" הקיימים (schedule:true ב-SITE_CONFIG), כולל כאלו שנוספו הרגע
+    for (const sp of getSchedulePagesFromForm()) {
+      await saveFileToGithub(
+        sp.dataFile,
+        () => buildScheduleDataJs(sp.title, sp.rows),
+        `עדכון ${sp.dataFile}`,
+        token
+      );
+    }
 
     await saveFileToGithub(
       "js/site-config.js",
@@ -671,6 +810,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("create-page-btn").addEventListener("click", () => {
     sessionStorage.setItem("gh_token", document.getElementById("gh-token").value.trim());
     createNewPage();
+  });
+
+  document.getElementById("new-page-type").addEventListener("change", (e) => {
+    document.getElementById("new-page-body-wrap").style.display = e.target.value === "schedule" ? "none" : "block";
   });
 
   document.getElementById("add-group-btn").addEventListener("click", () => addCommitteeGroup());

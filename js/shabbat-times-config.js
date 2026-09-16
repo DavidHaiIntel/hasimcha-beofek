@@ -1,8 +1,10 @@
 /* ===== זמני תפילות שבת - נערך מעמוד הניהול (admin.html) =====
    כל זמן מחושב אוטומטית כל שבוע (ראו calcShabbatTimes ב-js/zmanim.js) אלא אם יש override
    (שדה שעה לא ריק) - אז הוא נדרס לשעה הקבועה שהוזנה. שורות עם key מקושרות לחישוב האוטומטי;
-   שורות בלי key (שנוספו ידנית) מציגות רק את ה-override. */
+   שורות בלי key (שנוספו ידנית) מציגות רק את ה-override. כנ"ל לגבי שם הפרשה - ריק = נמשך
+   אוטומטית מ-Hebcal, אחרת מוצג הטקסט הקבוע שהוזן. */
 const SHABBAT_TIMES_CONFIG = {
+  parashaTitle: { override: "" },
   candleLighting: { override: "" },
   shabbatEnds: { override: "" },
   rows: [
@@ -14,3 +16,4 @@ const SHABBAT_TIMES_CONFIG = {
     { key: "arvitMotzash", label: "ערבית של מוצ\"ש", override: "", hidden: false },
   ],
 };
+

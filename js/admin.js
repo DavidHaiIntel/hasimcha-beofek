@@ -72,11 +72,6 @@ function parseListFromHtml(html, id) {
   return rows;
 }
 
-function parseTitleFromHtml(html) {
-  const match = html.match(/<h3 id="parasha-title">([\s\S]*?)<\/h3>/);
-  return match ? match[1].trim() : "";
-}
-
 // ===== זמני תפילות שבת (js/shabbat-times-config.js) - אוטומטי + אפשרות דריסה/הוספה/מחיקה =====
 async function fetchLiveShabbatTimesConfigJs() {
   const resp = await fetch(
@@ -88,24 +83,26 @@ async function fetchLiveShabbatTimesConfigJs() {
 
 function parseShabbatTimesConfigJs(jsText) {
   const match = jsText.match(/SHABBAT_TIMES_CONFIG\s*=\s*(\{[\s\S]*?\n\});/);
-  if (!match) return { candleLighting: { override: "" }, shabbatEnds: { override: "" }, rows: [] };
+  if (!match) return { parashaTitle: { override: "" }, candleLighting: { override: "" }, shabbatEnds: { override: "" }, rows: [] };
   try {
     // eslint-disable-next-line no-new-func
     return Function(`"use strict"; return (${match[1]});`)();
   } catch (e) {
-    return { candleLighting: { override: "" }, shabbatEnds: { override: "" }, rows: [] };
+    return { parashaTitle: { override: "" }, candleLighting: { override: "" }, shabbatEnds: { override: "" }, rows: [] };
   }
 }
 
-function buildShabbatTimesConfigJs(candleOverride, shabbatEndsOverride, rows) {
+function buildShabbatTimesConfigJs(parashaOverride, candleOverride, shabbatEndsOverride, rows) {
   const rowsJs = rows
     .map((r) => `    { key: "${r.key}", label: "${r.label.replace(/"/g, '\\"')}", override: "${r.time}", hidden: ${r.hidden} },`)
     .join("\n");
   return `/* ===== זמני תפילות שבת - נערך מעמוד הניהול (admin.html) =====
    כל זמן מחושב אוטומטית כל שבוע (ראו calcShabbatTimes ב-js/zmanim.js) אלא אם יש override
    (שדה שעה לא ריק) - אז הוא נדרס לשעה הקבועה שהוזנה. שורות עם key מקושרות לחישוב האוטומטי;
-   שורות בלי key (שנוספו ידנית) מציגות רק את ה-override. */
+   שורות בלי key (שנוספו ידנית) מציגות רק את ה-override. כנ"ל לגבי שם הפרשה - ריק = נמשך
+   אוטומטית מ-Hebcal, אחרת מוצג הטקסט הקבוע שהוזן. */
 const SHABBAT_TIMES_CONFIG = {
+  parashaTitle: { override: "${parashaOverride.replace(/"/g, '\\"')}" },
   candleLighting: { override: "${candleOverride}" },
   shabbatEnds: { override: "${shabbatEndsOverride}" },
   rows: [
@@ -159,9 +156,10 @@ function addNameRow(container, name = "") {
 
 function addCommitteeGroup(group = { title: "", names: [] }) {
   const container = document.getElementById("committee-groups");
-  const groupEl = document.createElement("div");
+  const groupEl = document.createElement("details");
   groupEl.className = "committee-group-editor";
   groupEl.innerHTML = `
+    <summary>${(group.title || "קבוצה חדשה").replace(/</g, "&lt;")}</summary>
     <div class="admin-field">
       <label>שם הקבוצה</label>
       <input type="text" class="group-title" value="${group.title.replace(/"/g, "&quot;")}">
@@ -170,6 +168,11 @@ function addCommitteeGroup(group = { title: "", names: [] }) {
     <button type="button" class="admin-add-btn add-name-btn">+ הוסף שם</button>
     <button type="button" class="remove-page-btn remove-group-btn">מחק קבוצה</button>
   `;
+  const summaryEl = groupEl.querySelector("summary");
+  const titleInput = groupEl.querySelector(".group-title");
+  titleInput.addEventListener("input", () => {
+    summaryEl.textContent = titleInput.value.trim() || "קבוצה חדשה";
+  });
   const namesContainer = groupEl.querySelector(".group-names");
   group.names.forEach((n) => addNameRow(namesContainer, n));
   groupEl.querySelector(".add-name-btn").addEventListener("click", () => addNameRow(namesContainer));
@@ -291,13 +294,13 @@ ${list}
 function addSchedulePageFieldset(page, data = { title: "", rows: [] }) {
   const container = document.getElementById("schedule-pages-container");
   const rowsId = `sched-${page.key}-rows`;
-  const fieldset = document.createElement("fieldset");
-  fieldset.className = "schedule-page-fieldset";
+  const fieldset = document.createElement("details");
+  fieldset.className = "admin-section schedule-page-fieldset";
   fieldset.dataset.key = page.key;
   fieldset.dataset.dataFile = page.dataFile;
   fieldset.dataset.rowsId = rowsId;
   fieldset.innerHTML = `
-    <legend>לוח: ${page.label} (${page.url})</legend>
+    <summary>לוח: ${page.label} (${page.url})</summary>
     <div class="admin-field">
       <label>כותרת הלוח</label>
       <input type="text" class="sched-title-input" value="${(data.title || page.label).replace(/"/g, "&quot;")}">
@@ -664,13 +667,13 @@ async function createNewPage() {
 
 async function loadIntoForm() {
   const html = await fetchLiveShabbatHtml();
-  document.getElementById("parasha-title-input").value = parseTitleFromHtml(html);
 
   document.getElementById("weekday-rows").innerHTML = "";
   parseListFromHtml(html, "weekday-list").forEach((r) => addRow("weekday-rows", r.label, r.time, r.hidden));
 
   const shabbatTimesJs = await fetchLiveShabbatTimesConfigJs();
   const shabbatTimesData = parseShabbatTimesConfigJs(shabbatTimesJs);
+  document.getElementById("parasha-title-input").value = shabbatTimesData.parashaTitle?.override || "";
   document.getElementById("shabbat-candle-override").value = shabbatTimesData.candleLighting?.override || "";
   document.getElementById("shabbat-ends-override").value = shabbatTimesData.shabbatEnds?.override || "";
   document.getElementById("shabbat-prayers-rows").innerHTML = "";
@@ -717,11 +720,8 @@ async function saveToGithub() {
     await saveFileToGithub(
       GH_FILE_PATH,
       (currentHtml) => {
-        const newTitle = document.getElementById("parasha-title-input").value.trim();
         const newWeekdayList = buildListHtml("weekday-list", getRows("weekday-rows"));
-        return currentHtml
-          .replace(/<h3 id="parasha-title">[\s\S]*?<\/h3>/, `<h3 id="parasha-title">${newTitle}</h3>`)
-          .replace(/<ul class="shabbat-list" id="weekday-list">[\s\S]*?<\/ul>/, newWeekdayList);
+        return currentHtml.replace(/<ul class="shabbat-list" id="weekday-list">[\s\S]*?<\/ul>/, newWeekdayList);
       },
       `עדכון לוז שבת`,
       token
@@ -730,9 +730,10 @@ async function saveToGithub() {
     await saveFileToGithub(
       "js/shabbat-times-config.js",
       () => {
+        const parashaOverride = document.getElementById("parasha-title-input").value.trim();
         const candleOverride = document.getElementById("shabbat-candle-override").value.trim();
         const shabbatEndsOverride = document.getElementById("shabbat-ends-override").value.trim();
-        return buildShabbatTimesConfigJs(candleOverride, shabbatEndsOverride, getRows("shabbat-prayers-rows"));
+        return buildShabbatTimesConfigJs(parashaOverride, candleOverride, shabbatEndsOverride, getRows("shabbat-prayers-rows"));
       },
       `עדכון זמני תפילות שבת`,
       token

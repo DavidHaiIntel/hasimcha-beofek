@@ -549,6 +549,11 @@ function renderShabbatTimes() {
 async function renderParashaName() {
   const el = document.getElementById("parasha-title");
   if (!el) return; // לא בעמוד שבת
+  const cfg = typeof SHABBAT_TIMES_CONFIG !== "undefined" ? SHABBAT_TIMES_CONFIG : null;
+  if (cfg?.parashaTitle?.override) {
+    el.textContent = cfg.parashaTitle.override;
+    return;
+  }
   try {
     const url = `https://www.hebcal.com/shabbat?cfg=json&latitude=${NETIVOT.lat}&longitude=${NETIVOT.lon}&tzid=${encodeURIComponent(NETIVOT.timeZone)}&M=on`;
     const resp = await fetch(url);

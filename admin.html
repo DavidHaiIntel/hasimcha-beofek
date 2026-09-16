@@ -31,9 +31,11 @@
   .admin-msg.ok { background: #e7f6ee; color: #1f7a4a; }
   .admin-msg.err { background: #fbe9e9; color: #a33; }
   .admin-help { font-size: 0.85rem; color: #6b7a80; margin-top: 4px; }
-  fieldset { border: 1px solid #e0e6e8; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
-  legend { padding: 0 8px; font-weight: 700; color: var(--color-teal); }
-  .committee-group-editor { border: 1px solid #e0e6e8; border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+  details.admin-section { border: 1px solid #e0e6e8; border-radius: 10px; padding: 0 16px 16px; margin-bottom: 20px; }
+  details.admin-section > summary { padding: 14px 4px; font-weight: 700; color: var(--color-teal); cursor: pointer; list-style: revert; }
+  details.admin-section[open] > summary { margin-bottom: 4px; }
+  .committee-group-editor { border: 1px solid #e0e6e8; border-radius: 8px; padding: 0 12px 12px; margin-bottom: 14px; }
+  .committee-group-editor > summary { padding: 10px 4px; font-weight: 600; color: var(--color-navy-dark); cursor: pointer; list-style: revert; }
   .committee-group-editor .group-names { margin-bottom: 8px; }
   .committee-group-editor .remove-group-btn { margin-inline-start: 8px; }
 </style>
@@ -80,8 +82,8 @@
         <h3>עריכת לוז שבת</h3>
         <p class="subtitle">השינויים נשמרים ומתפרסמים ישירות באתר החי (דרך GitHub)</p>
 
-        <fieldset>
-          <legend>חיבור ל-GitHub</legend>
+        <details class="admin-section" open>
+          <summary>חיבור ל-GitHub</summary>
           <div class="admin-field">
             <label for="gh-token">Personal Access Token (עם הרשאת repo)</label>
             <input type="password" id="gh-token" autocomplete="off" placeholder="ghp_...">
@@ -90,10 +92,10 @@
               סמן הרשאת "repo". הטוקן נשמר רק בדפדפן שלך לזמן הביקור (לא נשלח לשום מקום חוץ מ-GitHub).
             </div>
           </div>
-        </fieldset>
+        </details>
 
-        <fieldset>
-          <legend>עמודים נוספים באתר</legend>
+        <details class="admin-section" open>
+          <summary>עמודים נוספים באתר</summary>
           <p class="admin-help">הדפים הקבועים (בית, זמני תפילה, שבת קודש, הקהילה, תרומות) תמיד פעילים. כאן ניתן להדליק/לכבות/למחוק דפים נוספים, ולהוסיף דפים חדשים.</p>
           <div id="extra-pages-rows"></div>
 
@@ -119,20 +121,15 @@
           </div>
           <button type="button" class="btn outline" id="create-page-btn">צור דף חדש</button>
           <div id="create-page-msg" style="display:none; margin-top:10px;"></div>
-        </fieldset>
+        </details>
 
-        <fieldset>
-          <legend>כותרת השבת</legend>
+        <details class="admin-section">
+          <summary>זמני תפילות שבת</summary>
+          <p class="admin-help">כל הזמנים (וכן שם הפרשה) מחושבים אוטומטית כל שבוע. השאירו שדה ריק כדי להשתמש בחישוב האוטומטי, או מלאו אותו כדי לדרוס אותו לשבוע הנוכחי. אפשר גם להוסיף שורות חדשות, למחוק או להסתיר קיימות - בדיוק כמו ברשימות האחרות.</p>
           <div class="admin-field">
-            <label for="parasha-title-input">שם הפרשה (למשל: שבת פרשת ניצבים-וילך)</label>
-            <input type="text" id="parasha-title-input">
-            <div class="admin-help">שם הפרשה נמשך אוטומטית מ-Hebcal בדרך כלל. שדה זה משמש רק כגיבוי אם השירות לא זמין.</div>
+            <label for="parasha-title-input">שם הפרשה - דריסה (ריק = חישוב אוטומטי)</label>
+            <input type="text" id="parasha-title-input" placeholder="למשל: שבת פרשת ניצבים-וילך">
           </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>זמני תפילות שבת</legend>
-          <p class="admin-help">כל הזמנים מחושבים אוטומטית כל שבוע (לפי שקיעה). השאירו שדה שעה ריק כדי להשתמש בחישוב האוטומטי, או הזינו שעה כדי לדרוס אותה לשבוע הנוכחי. אפשר גם להוסיף שורות חדשות, למחוק או להסתיר קיימות - בדיוק כמו ברשימות האחרות.</p>
           <div class="admin-field">
             <label for="shabbat-candle-override">כניסת שבת - דריסה (ריק = חישוב אוטומטי)</label>
             <input type="text" id="shabbat-candle-override" placeholder="למשל: 18:30">
@@ -143,22 +140,22 @@
           </div>
           <div id="shabbat-prayers-rows"></div>
           <button type="button" class="admin-add-btn" data-target="shabbat-prayers-rows">+ הוסף שורה</button>
-        </fieldset>
+        </details>
 
-        <fieldset>
-          <legend>תפילות ימי חול</legend>
+        <details class="admin-section">
+          <summary>תפילות ימי חול</summary>
           <div id="weekday-rows"></div>
           <button type="button" class="admin-add-btn" data-target="weekday-rows">+ הוסף שורה</button>
-        </fieldset>
+        </details>
 
-        <fieldset>
-          <legend>שיעורים במהלך השבוע</legend>
+        <details class="admin-section">
+          <summary>שיעורים במהלך השבוע</summary>
           <div id="shiurim-rows"></div>
           <button type="button" class="admin-add-btn" data-target="shiurim-rows">+ הוסף שורה</button>
-        </fieldset>
+        </details>
 
-        <fieldset>
-          <legend>לוח ראש השנה</legend>
+        <details class="admin-section">
+          <summary>לוח ראש השנה</summary>
           <p class="admin-help">מוצג בדף "ראש השנה" ובדף השבת (אוטומטית, כשהשבת הקרובה חלה בא' תשרי). שורה עם שדה שעה ריק מוצגת כשורת הערה בלי שעה (כמו "מוסף").</p>
           <div class="admin-field">
             <label for="rh-title-input">כותרת (למשל: ראש השנה תשפ"ז)</label>
@@ -184,16 +181,16 @@
           </div>
           <div id="rh-day2-rows"></div>
           <button type="button" class="admin-add-btn" data-target="rh-day2-rows">+ הוסף שורה</button>
-        </fieldset>
+        </details>
 
         <div id="schedule-pages-container"></div>
 
-        <fieldset>
-          <legend>עמוד הקהילה (הנהלה)</legend>
+        <details class="admin-section">
+          <summary>עמוד הקהילה (הנהלה)</summary>
           <p class="admin-help">עריכת קבוצות הנהלה (רב, ועדים, גבאים) שמופיעות בעמוד "הקהילה" באתר.</p>
           <div id="committee-groups"></div>
           <button type="button" class="btn outline" id="add-group-btn">+ הוסף קבוצה</button>
-        </fieldset>
+        </details>
 
         <button class="btn" id="save-btn">שמור ופרסם באתר</button>
         <button class="btn outline" id="reload-btn" type="button">טען מחדש מהאתר החי</button>

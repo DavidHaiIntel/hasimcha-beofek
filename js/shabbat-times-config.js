@@ -12,5 +12,6 @@ const SHABBAT_TIMES_CONFIG = {
     { key: "limudHorim", label: "לימוד הורים וילדים", override: "", hidden: false },
     { key: "minchaShabbat", label: "מנחה של שבת", override: "", hidden: false },
     { key: "arvitMotzash", label: "ערבית של מוצ\"ש", override: "", hidden: false },
+    { key: "", label: "שיעור של הרב דוד אסולין לשבת תשובה", override: "10:30", hidden: false },
   ],
 };

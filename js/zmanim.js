@@ -536,10 +536,12 @@ function renderShabbatTimes() {
 
   const listEl = document.getElementById("shabbat-prayers-list");
   if (listEl && cfg) {
-    const rows = cfg.rows
+    // לא ממיינים לפי שעה - הלוז חוצה יממה (ערב שבת ואז יום שבת), ומיון לפי שעון-יום
+    // גולמי היה מעביר את "שחרית" (בוקר) לפני "מנחה, קבלת שבת" (ערב הקודם) בטעות.
+    // סדר התצוגה הוא בדיוק סדר השורות כפי שהוגדר בניהול (js/shabbat-times-config.js).
+    listEl.innerHTML = cfg.rows
       .filter((r) => !r.hidden)
-      .map((r) => ({ label: r.label, time: r.override || computed[r.key] || "" }));
-    listEl.innerHTML = sortRowsByTime(rows)
+      .map((r) => ({ label: r.label, time: r.override || computed[r.key] || "" }))
       .map((r) => `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`)
       .join("");
   }

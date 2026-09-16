@@ -23,6 +23,8 @@ function addRow(containerId, label = "", time = "", hidden = false, key = "") {
   row.dataset.hidden = hidden ? "true" : "false";
   row.dataset.key = key;
   row.innerHTML = `
+    <button type="button" class="move-row-btn move-up-btn" title="הזז למעלה">↑</button>
+    <button type="button" class="move-row-btn move-down-btn" title="הזז למטה">↓</button>
     <input type="text" class="row-label" placeholder="תיאור" value="${label.replace(/"/g, "&quot;")}">
     <input type="text" class="row-time" placeholder="שעה" value="${time.replace(/"/g, "&quot;")}">
     <button type="button" class="hide-row-btn">${hidden ? "הצג" : "הסתר"}</button>
@@ -35,6 +37,14 @@ function addRow(containerId, label = "", time = "", hidden = false, key = "") {
     row.dataset.hidden = nowHidden ? "true" : "false";
     row.classList.toggle("row-hidden", nowHidden);
     e.target.textContent = nowHidden ? "הצג" : "הסתר";
+  });
+  row.querySelector(".move-up-btn").addEventListener("click", () => {
+    const prev = row.previousElementSibling;
+    if (prev) container.insertBefore(row, prev);
+  });
+  row.querySelector(".move-down-btn").addEventListener("click", () => {
+    const next = row.nextElementSibling;
+    if (next) container.insertBefore(next, row);
   });
   container.appendChild(row);
 }

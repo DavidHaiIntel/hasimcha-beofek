@@ -184,6 +184,57 @@
           <button type="button" class="admin-add-btn" data-target="rh-day2-rows">+ הוסף שורה</button>
         </details>
 
+        <details class="admin-section">
+          <summary>לוח יום הכיפורים</summary>
+          <p class="admin-help">מוצג בדף "יום כיפור". שורה עם שדה שעה ריק מוצגת כשורת הערה בלי שעה. חשוב: הסדר בטורי יום הכיפורים עצמו הוא ידני (בלי מיון אוטומטי לפי שעה) כי הטור חוצה יממה (ליל כל נדרי ואז יום המחרת) - השתמשו בכפתורי ↑/↓ לסדר נכון.</p>
+          <div class="admin-field">
+            <label for="kippur-title-input">כותרת (למשל: זמני תפילות ליום הכיפורים תשפ"ז)</label>
+            <input type="text" id="kippur-title-input">
+          </div>
+          <div class="admin-field">
+            <label for="kippur-fast-start-input">כניסת הצום</label>
+            <input type="text" id="kippur-fast-start-input" placeholder="למשל: 18:18">
+          </div>
+          <div class="admin-field">
+            <label for="kippur-fast-end-input">יציאת הצום</label>
+            <input type="text" id="kippur-fast-end-input" placeholder="למשל: 19:16">
+          </div>
+
+          <div class="admin-field" style="margin-top:16px;">
+            <label for="kippur-erev-label">כותרת יום ערב יום הכיפורים (למשל: ראשון, ט' תשרי)</label>
+            <input type="text" id="kippur-erev-label">
+          </div>
+          <div id="kippur-erev-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="kippur-erev-rows">+ הוסף שורה</button>
+
+          <div class="admin-field" style="margin-top:16px;">
+            <label for="kippur-col0-label">כותרת עמודה 1 ביום הכיפורים (למשל: מניין אשכנזי - אולם תפילה)</label>
+            <input type="text" id="kippur-col0-label">
+          </div>
+          <div id="kippur-col0-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="kippur-col0-rows">+ הוסף שורה</button>
+
+          <div class="admin-field" style="margin-top:16px;">
+            <label for="kippur-col1-label">כותרת עמודה 2 ביום הכיפורים (למשל: מניין עדות המזרח - חדר לימוד)</label>
+            <input type="text" id="kippur-col1-label">
+          </div>
+          <div id="kippur-col1-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="kippur-col1-rows">+ הוסף שורה</button>
+
+          <div class="admin-field" style="margin-top:16px;">
+            <label for="kippur-footer-line1">שורת סיום 1 (למשל: תקיעת שופר ברוב עם)</label>
+            <input type="text" id="kippur-footer-line1">
+          </div>
+          <div class="admin-field">
+            <label for="kippur-footer-line2">שורת סיום 2 (למשל: ערבית וברכת הלבנה)</label>
+            <input type="text" id="kippur-footer-line2">
+          </div>
+          <div class="admin-field">
+            <label for="kippur-closing">ברכת סיום (למשל: גמר חתימה טובה)</label>
+            <input type="text" id="kippur-closing">
+          </div>
+        </details>
+
         <div id="schedule-pages-container"></div>
 
         <details class="admin-section">
@@ -211,8 +262,8 @@
   </div>
 </footer>
 
-<script src="js/site-config.js?v=8"></script>
-<script src="js/common.js?v=8"></script>
-<script src="js/admin.js?v=8"></script>
+<script src="js/site-config.js?v=9"></script>
+<script src="js/common.js?v=9"></script>
+<script src="js/admin.js?v=9"></script>
 </body>
 </html>

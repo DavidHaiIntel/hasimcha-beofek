@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>זמני תפילה - לוח הנץ החמה | השמחה שבאופק</title>
-<meta name="description" content="לוח זמנים חודשי של הנץ החמה ותחילת תפילת ותיקין בנתיבות.">
-<meta property="og:title" content="זמני תפילה - לוח הנץ החמה | השמחה שבאופק">
-<meta property="og:description" content="לוח זמנים חודשי של הנץ החמה ותחילת תפילת ותיקין בנתיבות.">
+<title>יום הכיפורים | השמחה שבאופק</title>
+<meta name="description" content="לוח זמני תפילות יום הכיפורים בבית הכנסת השמחה שבאופק, נתיבות.">
+<meta property="og:title" content="יום הכיפורים | השמחה שבאופק">
+<meta property="og:description" content="לוח זמני תפילות יום הכיפורים.">
 <meta property="og:image" content="https://davidhaiintel.github.io/hasimcha-beofek/images/logo.png">
-<meta property="og:url" content="https://davidhaiintel.github.io/hasimcha-beofek/zmanim.html">
+<meta property="og:url" content="https://davidhaiintel.github.io/hasimcha-beofek/kippur.html">
 <meta property="og:type" content="website">
 <link rel="icon" href="images/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,7 +35,7 @@
     <button class="nav-toggle" aria-label="פתח תפריט">&#9776;</button>
     <nav class="main-nav">
       <a href="index.html">בית</a>
-      <a href="zmanim.html" class="active">זמני תפילה</a>
+      <a href="zmanim.html">זמני תפילה</a>
       <a href="shabbat.html">שבת קודש</a>
       <span id="extra-nav-links"></span>
       <a href="about.html">הקהילה</a>
@@ -47,36 +47,41 @@
 <main>
   <section class="section">
     <div class="container">
-      <h3>לוח זמני הנץ החמה - נתיבות</h3>
-      <p class="subtitle">הנץ החמה (זריחה נראית) ותחילת תפילת ותיקין (18 דק' לפני הנץ)</p>
 
-      <div class="month-nav">
-        <button id="prev-month" aria-label="חודש קודם">›</button>
-        <span class="current-month" id="current-month-label"></span>
-        <button id="next-month" aria-label="חודש הבא">‹</button>
+      <div class="shabbat-poster" id="kippur-poster">
+        <div class="poster-deco" aria-hidden="true">
+          <img src="images/logo.png" alt="" class="poster-logo">
+          <svg class="poster-mandala" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" stroke="#3a8fd0" fill="none" stroke-width="1">
+            <circle cx="100" cy="100" r="90" stroke-dasharray="4 6"/>
+            <circle cx="100" cy="100" r="70"/>
+            <circle cx="100" cy="100" r="50" stroke-dasharray="2 5"/>
+            <circle cx="100" cy="100" r="30"/>
+            <path d="M100 10 L100 190 M10 100 L190 100"/>
+            <path d="M35 35 L165 165 M35 165 L165 35"/>
+          </svg>
+        </div>
+        <div class="parasha-header">
+          <h3 class="kippur-title"></h3>
+          <div class="candle-times">
+            <span>כניסת הצום: <span class="value kippur-fast-start"></span></span>
+            <span>יציאת הצום: <span class="value kippur-fast-end"></span></span>
+          </div>
+        </div>
+
+        <div class="kippur-erev-day"></div>
+
+        <h3 class="kippur-section-title">יום הכיפורים</h3>
+        <div class="shabbat-cols kippur-columns"></div>
+
+        <div class="shabbat-footer">
+          <p class="kippur-footer-line1"></p>
+          <p class="kippur-footer-line2"></p>
+        </div>
+        <div class="shabbat-shalom kippur-closing"></div>
       </div>
 
-      <div class="zman-table-wrap">
-        <table class="zman-table">
-          <thead>
-            <tr>
-              <th>תאריך עברי</th>
-              <th>תאריך לועזי</th>
-              <th>יום</th>
-              <th>הנץ החמה</th>
-              <th>תחילת תפילה (הודו)</th>
-            </tr>
-          </thead>
-          <tbody id="zman-table-body">
-            <tr><td colspan="5">טוען...</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="note-box">
-        הזמנים מחושבים אוטומטית לפי מיקום נתיבות (זריחה נראית), ומתעדכנים בהתאם לשעון ישראל (כולל שעון קיץ).
-        השורה המסומנת בצבע היא היום הנוכחי, ושורות השבת מודגשות בזהב.
-        בשבתות ובימים טובים אין מניין ותיקין (בחול המועד יש תפילה כרגיל).
+      <div class="print-btn-wrap no-print">
+        <button id="print-kippur-btn" class="btn outline">🖨️ הדפסת הלוח</button>
       </div>
     </div>
   </section>
@@ -96,9 +101,11 @@
   </div>
 </footer>
 
-<script src="js/netz-data.js?v=9"></script>
-<script src="js/zmanim.js?v=9"></script>
 <script src="js/site-config.js?v=9"></script>
+<script src="js/kippur-data.js?v=9"></script>
 <script src="js/common.js?v=9"></script>
+<script>
+  document.getElementById("print-kippur-btn").addEventListener("click", () => window.print());
+</script>
 </body>
 </html>

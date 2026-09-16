@@ -76,6 +76,42 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // לוח יום הכיפורים (js/kippur-data.js) - מוצג בדף kippur.html.
+  // אין מיון אוטומטי לפי שעה (הטורים חוצים יממה - ליל כל נדרי ואז יום המחרת) - הסדר הוא
+  // בדיוק סדר השורות כפי שמוגדר בנתונים/בניהול (עם כפתורי ↑/↓ לסידור ידני).
+  if (typeof KIPPUR_DATA !== "undefined") {
+    document.querySelectorAll(".kippur-title").forEach((el) => { el.textContent = KIPPUR_DATA.title; });
+    document.querySelectorAll(".kippur-fast-start").forEach((el) => { el.textContent = KIPPUR_DATA.fastStart; });
+    document.querySelectorAll(".kippur-fast-end").forEach((el) => { el.textContent = KIPPUR_DATA.fastEnd; });
+    document.querySelectorAll(".kippur-footer-line1").forEach((el) => { el.textContent = KIPPUR_DATA.footerLine1; });
+    document.querySelectorAll(".kippur-footer-line2").forEach((el) => { el.textContent = KIPPUR_DATA.footerLine2; });
+    document.querySelectorAll(".kippur-closing").forEach((el) => { el.textContent = KIPPUR_DATA.closing; });
+
+    document.querySelectorAll(".kippur-erev-day").forEach((container) => {
+      const items = KIPPUR_DATA.erevDay.rows
+        .filter((r) => !r.hidden)
+        .map((r) => r.time
+          ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+          : `<li class="note-line"><span>${r.label}</span></li>`)
+        .join("");
+      container.innerHTML = `<div class="shabbat-cols" style="grid-template-columns:1fr;"><div class="col"><h4>${KIPPUR_DATA.erevDay.label}</h4><ul class="shabbat-list">${items}</ul></div></div>`;
+    });
+
+    document.querySelectorAll(".kippur-columns").forEach((container) => {
+      const divider = `<div class="col-divider" aria-hidden="true"><span class="ornament-tip">❦</span><span class="divider-line"></span><span class="divider-dot"></span><span class="divider-line"></span><span class="ornament-tip">❦</span></div>`;
+      const cols = KIPPUR_DATA.columns.map((col) => {
+        const items = col.rows
+          .filter((r) => !r.hidden)
+          .map((r) => r.time
+            ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+            : `<li class="note-line"><span>${r.label}</span></li>`)
+          .join("");
+        return `<div class="col"><h4>${col.label}</h4><ul class="shabbat-list">${items}</ul></div>`;
+      });
+      container.innerHTML = cols.join(divider);
+    });
+  }
+
   // בניית קישורי הניווט לדפים נוספים (מנוהלים דרך עמוד הניהול, ב-SITE_CONFIG) - וחסימת תוכן דף כבוי
   if (typeof SITE_CONFIG !== "undefined") {
     const currentPage = location.pathname.split("/").pop();

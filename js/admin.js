@@ -386,6 +386,67 @@ ${daysJs}
 `;
 }
 
+// ===== לוח יום הכיפורים (js/kippur-data.js) - כותרת + כניסת/יציאת הצום + יום ערב + 2 עמודות =====
+async function fetchLiveKippurDataJs() {
+  const resp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/kippur-data.js?t=${Date.now()}`
+  );
+  if (!resp.ok) throw new Error("לא הצלחתי לטעון את לוח יום הכיפורים מ-GitHub");
+  return resp.text();
+}
+
+function defaultKippurData() {
+  return {
+    title: "", fastStart: "", fastEnd: "",
+    erevDay: { label: "", rows: [] },
+    columns: [{ label: "", rows: [] }, { label: "", rows: [] }],
+    footerLine1: "", footerLine2: "", closing: "",
+  };
+}
+
+function parseKippurDataJs(jsText) {
+  const match = jsText.match(/KIPPUR_DATA\s*=\s*(\{[\s\S]*?\n\});/);
+  if (!match) return defaultKippurData();
+  try {
+    // eslint-disable-next-line no-new-func
+    return Function(`"use strict"; return (${match[1]});`)();
+  } catch (e) {
+    return defaultKippurData();
+  }
+}
+
+// לא ממיינים שורות לפי שעה - הטורים ביום הכיפורים חוצים יממה (ליל כל נדרי ואז יום המחרת),
+// והסדר הנכון נשמר בדיוק כפי שהוזן/סודר בניהול (עם כפתורי ↑/↓).
+function buildKippurDataJs(data) {
+  const rowsToJs = (rows) => rows
+    .map((r) => `        { label: "${r.label.replace(/"/g, '\\"')}", time: "${r.time}", hidden: ${r.hidden} },`)
+    .join("\n");
+  const columnsJs = data.columns.map((col) => {
+    return `    {\n      label: "${col.label.replace(/"/g, '\\"')}",\n      rows: [\n${rowsToJs(col.rows)}\n      ],\n    },`;
+  }).join("\n");
+  return `/* ===== לוח זמני יום הכיפורים - נערך מעמוד הניהול (admin.html) =====
+   מוצג בדף kippur.html. אין מיון אוטומטי לפי שעה בטורי יוה"כ - כי הם חוצים יממה (ליל כל נדרי
+   ואז יום המחרת) - הסדר הוא בדיוק סדר השורות כפי שנערך בניהול (עם כפתורי ↑/↓). */
+const KIPPUR_DATA = {
+  title: "${data.title.replace(/"/g, '\\"')}",
+  fastStart: "${data.fastStart}",
+  fastEnd: "${data.fastEnd}",
+  erevDay: {
+    label: "${data.erevDay.label.replace(/"/g, '\\"')}",
+    rows: [
+${rowsToJs(data.erevDay.rows)}
+    ],
+  },
+  columns: [
+${columnsJs}
+  ],
+  footerLine1: "${data.footerLine1.replace(/"/g, '\\"')}",
+  footerLine2: "${data.footerLine2.replace(/"/g, '\\"')}",
+  closing: "${data.closing.replace(/"/g, '\\"')}",
+};
+`;
+}
+
 function parseExtraPagesFromJs(jsText) {
   const match = jsText.match(/extraPages:\s*(\[[\s\S]*?\])\s*,?\s*\};/);
   if (!match) return [];
@@ -702,6 +763,23 @@ async function loadIntoForm() {
     (rhData.days[i]?.rows || []).forEach((r) => addRow(`rh-day${i}-rows`, r.label, r.time, r.hidden));
   });
 
+  const kippurJs = await fetchLiveKippurDataJs();
+  const kippurData = parseKippurDataJs(kippurJs);
+  document.getElementById("kippur-title-input").value = kippurData.title;
+  document.getElementById("kippur-fast-start-input").value = kippurData.fastStart;
+  document.getElementById("kippur-fast-end-input").value = kippurData.fastEnd;
+  document.getElementById("kippur-erev-label").value = kippurData.erevDay.label;
+  document.getElementById("kippur-erev-rows").innerHTML = "";
+  kippurData.erevDay.rows.forEach((r) => addRow("kippur-erev-rows", r.label, r.time, r.hidden));
+  [0, 1].forEach((i) => {
+    document.getElementById(`kippur-col${i}-label`).value = kippurData.columns[i]?.label || "";
+    document.getElementById(`kippur-col${i}-rows`).innerHTML = "";
+    (kippurData.columns[i]?.rows || []).forEach((r) => addRow(`kippur-col${i}-rows`, r.label, r.time, r.hidden));
+  });
+  document.getElementById("kippur-footer-line1").value = kippurData.footerLine1;
+  document.getElementById("kippur-footer-line2").value = kippurData.footerLine2;
+  document.getElementById("kippur-closing").value = kippurData.closing;
+
   const configJs = await fetchLiveSiteConfigJs();
   const extraPages = parseExtraPagesFromJs(configJs);
   renderExtraPagesForm(extraPages);
@@ -767,6 +845,28 @@ async function saveToGithub() {
         return buildRoshHashanaDataJs(title, days);
       },
       `עדכון לוח ראש השנה`,
+      token
+    );
+
+    await saveFileToGithub(
+      "js/kippur-data.js",
+      () => buildKippurDataJs({
+        title: document.getElementById("kippur-title-input").value.trim(),
+        fastStart: document.getElementById("kippur-fast-start-input").value.trim(),
+        fastEnd: document.getElementById("kippur-fast-end-input").value.trim(),
+        erevDay: {
+          label: document.getElementById("kippur-erev-label").value.trim(),
+          rows: getRows("kippur-erev-rows"),
+        },
+        columns: [0, 1].map((i) => ({
+          label: document.getElementById(`kippur-col${i}-label`).value.trim(),
+          rows: getRows(`kippur-col${i}-rows`),
+        })),
+        footerLine1: document.getElementById("kippur-footer-line1").value.trim(),
+        footerLine2: document.getElementById("kippur-footer-line2").value.trim(),
+        closing: document.getElementById("kippur-closing").value.trim(),
+      }),
+      `עדכון לוח יום הכיפורים`,
       token
     );
 

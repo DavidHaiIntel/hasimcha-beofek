@@ -391,6 +391,12 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
   color: #1a1a1a;
 }
 .shabbat-poster .candle-times span.value { color: #1a1a1a; }
+.kippur-section-title {
+  text-align: center;
+  color: #2e6da4;
+  font-size: 1.3rem;
+  margin: 4px 0 0;
+}
 
 .shabbat-cols {
   display: grid;

@@ -131,6 +131,21 @@
         </fieldset>
 
         <fieldset>
+          <legend>זמני תפילות שבת</legend>
+          <p class="admin-help">כל הזמנים מחושבים אוטומטית כל שבוע (לפי שקיעה). השאירו שדה שעה ריק כדי להשתמש בחישוב האוטומטי, או הזינו שעה כדי לדרוס אותה לשבוע הנוכחי. אפשר גם להוסיף שורות חדשות, למחוק או להסתיר קיימות - בדיוק כמו ברשימות האחרות.</p>
+          <div class="admin-field">
+            <label for="shabbat-candle-override">כניסת שבת - דריסה (ריק = חישוב אוטומטי)</label>
+            <input type="text" id="shabbat-candle-override" placeholder="למשל: 18:30">
+          </div>
+          <div class="admin-field">
+            <label for="shabbat-ends-override">יציאת שבת - דריסה (ריק = חישוב אוטומטי)</label>
+            <input type="text" id="shabbat-ends-override" placeholder="למשל: 19:40">
+          </div>
+          <div id="shabbat-prayers-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="shabbat-prayers-rows">+ הוסף שורה</button>
+        </fieldset>
+
+        <fieldset>
           <legend>תפילות ימי חול</legend>
           <div id="weekday-rows"></div>
           <button type="button" class="admin-add-btn" data-target="weekday-rows">+ הוסף שורה</button>
@@ -198,8 +213,8 @@
   </div>
 </footer>
 
-<script src="js/site-config.js?v=7"></script>
-<script src="js/common.js?v=7"></script>
-<script src="js/admin.js?v=7"></script>
+<script src="js/site-config.js?v=8"></script>
+<script src="js/common.js?v=8"></script>
+<script src="js/admin.js?v=8"></script>
 </body>
 </html>

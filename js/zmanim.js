@@ -517,14 +517,32 @@ function renderShabbatTimes() {
   if (!el) return; // לא בעמוד שבת
   const t = calcShabbatTimes();
   if (!t) return;
-  document.getElementById("candle-time").textContent = formatTime(t.candleLighting);
-  document.getElementById("shabbat-end-time").textContent = formatTime(t.shabbatEnds);
-  document.getElementById("shir-hashirim-time").textContent = formatTime(t.shirHashirim);
-  document.getElementById("mincha-erev-time").textContent = formatTime(t.minchaErev);
-  document.getElementById("shacharit-time").textContent = t.shacharit;
-  document.getElementById("limud-horim-time").textContent = formatTime(t.limudHorim);
-  document.getElementById("mincha-shabbat-time").textContent = formatTime(t.minchaShabbat);
-  document.getElementById("arvit-motzash-time").textContent = formatTime(t.arvitMotzash);
+
+  // ערכים מחושבים אוטומטית - משמשים כברירת מחדל לכל זמן שלא נדרס ידנית מהניהול
+  const computed = {
+    candleLighting: formatTime(t.candleLighting),
+    shabbatEnds: formatTime(t.shabbatEnds),
+    shirHashirim: formatTime(t.shirHashirim),
+    minchaErev: formatTime(t.minchaErev),
+    shacharit: t.shacharit,
+    limudHorim: formatTime(t.limudHorim),
+    minchaShabbat: formatTime(t.minchaShabbat),
+    arvitMotzash: formatTime(t.arvitMotzash),
+  };
+  const cfg = typeof SHABBAT_TIMES_CONFIG !== "undefined" ? SHABBAT_TIMES_CONFIG : null;
+
+  document.getElementById("candle-time").textContent = cfg?.candleLighting?.override || computed.candleLighting;
+  document.getElementById("shabbat-end-time").textContent = cfg?.shabbatEnds?.override || computed.shabbatEnds;
+
+  const listEl = document.getElementById("shabbat-prayers-list");
+  if (listEl && cfg) {
+    const rows = cfg.rows
+      .filter((r) => !r.hidden)
+      .map((r) => ({ label: r.label, time: r.override || computed[r.key] || "" }));
+    listEl.innerHTML = sortRowsByTime(rows)
+      .map((r) => `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`)
+      .join("");
+  }
 }
 
 // מושך את שם הפרשה הנוכחית אוטומטית מ-Hebcal (ללא צורך בעדכון ידני מדי שבוע)

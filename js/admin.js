@@ -16,11 +16,12 @@ function b64DecodeUnicode(str) {
   return decodeURIComponent(escape(atob(str)));
 }
 
-function addRow(containerId, label = "", time = "", hidden = false) {
+function addRow(containerId, label = "", time = "", hidden = false, key = "") {
   const container = document.getElementById(containerId);
   const row = document.createElement("div");
   row.className = "admin-row";
   row.dataset.hidden = hidden ? "true" : "false";
+  row.dataset.key = key;
   row.innerHTML = `
     <input type="text" class="row-label" placeholder="תיאור" value="${label.replace(/"/g, "&quot;")}">
     <input type="text" class="row-time" placeholder="שעה" value="${time.replace(/"/g, "&quot;")}">
@@ -44,6 +45,7 @@ function getRows(containerId) {
     label: row.querySelector(".row-label").value.trim(),
     time: row.querySelector(".row-time").value.trim(),
     hidden: row.dataset.hidden === "true",
+    key: row.dataset.key || "",
   })).filter((r) => r.label || r.time);
 }
 
@@ -73,6 +75,44 @@ function parseListFromHtml(html, id) {
 function parseTitleFromHtml(html) {
   const match = html.match(/<h3 id="parasha-title">([\s\S]*?)<\/h3>/);
   return match ? match[1].trim() : "";
+}
+
+// ===== זמני תפילות שבת (js/shabbat-times-config.js) - אוטומטי + אפשרות דריסה/הוספה/מחיקה =====
+async function fetchLiveShabbatTimesConfigJs() {
+  const resp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/shabbat-times-config.js?t=${Date.now()}`
+  );
+  if (!resp.ok) throw new Error("לא הצלחתי לטעון את הגדרות זמני שבת מ-GitHub");
+  return resp.text();
+}
+
+function parseShabbatTimesConfigJs(jsText) {
+  const match = jsText.match(/SHABBAT_TIMES_CONFIG\s*=\s*(\{[\s\S]*?\n\});/);
+  if (!match) return { candleLighting: { override: "" }, shabbatEnds: { override: "" }, rows: [] };
+  try {
+    // eslint-disable-next-line no-new-func
+    return Function(`"use strict"; return (${match[1]});`)();
+  } catch (e) {
+    return { candleLighting: { override: "" }, shabbatEnds: { override: "" }, rows: [] };
+  }
+}
+
+function buildShabbatTimesConfigJs(candleOverride, shabbatEndsOverride, rows) {
+  const rowsJs = rows
+    .map((r) => `    { key: "${r.key}", label: "${r.label.replace(/"/g, '\\"')}", override: "${r.time}", hidden: ${r.hidden} },`)
+    .join("\n");
+  return `/* ===== זמני תפילות שבת - נערך מעמוד הניהול (admin.html) =====
+   כל זמן מחושב אוטומטית כל שבוע (ראו calcShabbatTimes ב-js/zmanim.js) אלא אם יש override
+   (שדה שעה לא ריק) - אז הוא נדרס לשעה הקבועה שהוזנה. שורות עם key מקושרות לחישוב האוטומטי;
+   שורות בלי key (שנוספו ידנית) מציגות רק את ה-override. */
+const SHABBAT_TIMES_CONFIG = {
+  candleLighting: { override: "${candleOverride}" },
+  shabbatEnds: { override: "${shabbatEndsOverride}" },
+  rows: [
+${rowsJs}
+  ],
+};
+`;
 }
 
 // ===== עמוד הקהילה (about.html) - קבוצות הנהלה (רב/ועדים/גבאים) =====
@@ -629,6 +669,13 @@ async function loadIntoForm() {
   document.getElementById("weekday-rows").innerHTML = "";
   parseListFromHtml(html, "weekday-list").forEach((r) => addRow("weekday-rows", r.label, r.time, r.hidden));
 
+  const shabbatTimesJs = await fetchLiveShabbatTimesConfigJs();
+  const shabbatTimesData = parseShabbatTimesConfigJs(shabbatTimesJs);
+  document.getElementById("shabbat-candle-override").value = shabbatTimesData.candleLighting?.override || "";
+  document.getElementById("shabbat-ends-override").value = shabbatTimesData.shabbatEnds?.override || "";
+  document.getElementById("shabbat-prayers-rows").innerHTML = "";
+  shabbatTimesData.rows.forEach((r) => addRow("shabbat-prayers-rows", r.label, r.override, r.hidden, r.key));
+
   const shiurimJs = await fetchLiveShiurimDataJs();
   document.getElementById("shiurim-rows").innerHTML = "";
   parseShiurimFromJs(shiurimJs).forEach((r) => addRow("shiurim-rows", r.label, r.time, r.hidden));
@@ -677,6 +724,17 @@ async function saveToGithub() {
           .replace(/<ul class="shabbat-list" id="weekday-list">[\s\S]*?<\/ul>/, newWeekdayList);
       },
       `עדכון לוז שבת`,
+      token
+    );
+
+    await saveFileToGithub(
+      "js/shabbat-times-config.js",
+      () => {
+        const candleOverride = document.getElementById("shabbat-candle-override").value.trim();
+        const shabbatEndsOverride = document.getElementById("shabbat-ends-override").value.trim();
+        return buildShabbatTimesConfigJs(candleOverride, shabbatEndsOverride, getRows("shabbat-prayers-rows"));
+      },
+      `עדכון זמני תפילות שבת`,
       token
     );
 

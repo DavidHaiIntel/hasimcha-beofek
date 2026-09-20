@@ -596,6 +596,8 @@ async function renderParashaName() {
     return;
   }
   try {
+    const { saturday } = getShabbatDates(new Date());
+    const saturdayStr = israelGregorianFormatter.format(saturday);
     const url = `https://www.hebcal.com/shabbat?cfg=json&latitude=${NETIVOT.lat}&longitude=${NETIVOT.lon}&tzid=${encodeURIComponent(NETIVOT.timeZone)}&M=on`;
     const resp = await fetch(url);
     const data = await resp.json();
@@ -604,6 +606,15 @@ async function renderParashaName() {
     const specialShabbat = (data.items || []).find((i) => i.category === "holiday" && i.subcat === "shabbat");
     if (parashaItem?.hebrew) {
       el.textContent = "שבת " + parashaItem.hebrew + (specialShabbat?.hebrew ? " - " + specialShabbat.hebrew : "");
+      return;
+    }
+    // אין קריאת פרשה רגילה השבוע - השבת חלה בתוך חג (כמו סוכות/פסח, שאין לגביו "parashat" ב-Hebcal).
+    // מציגים את שם החג עצמו במקום (כדי שהכותרת לא תישאר תקועה על הפרשה של השבוע הקודם).
+    const holidayOnSaturday = (data.items || []).find(
+      (i) => i.category === "holiday" && i.date?.slice(0, 10) === saturdayStr
+    );
+    if (holidayOnSaturday?.hebrew) {
+      el.textContent = "שבת " + holidayOnSaturday.hebrew;
     }
   } catch (e) {
     // אם אין רשת/ה-API לא זמין - נשאר השם הקבוע שכתוב בקובץ כברירת מחדל

@@ -447,6 +447,45 @@ ${columnsJs}
 `;
 }
 
+// ===== שינויים בשחרית של שמחת תורה (js/simchat-torah-config.js) - שאר זמני היום נלקחים =====
+// אוטומטית מ-js/shabbat-times-config.js (בדיוק כמו שבת רגילה) - כאן עורכים רק את בלוק השחרית.
+async function fetchLiveSimchatTorahDataJs() {
+  const resp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/simchat-torah-config.js?t=${Date.now()}`
+  );
+  if (!resp.ok) throw new Error("לא הצלחתי לטעון את לוח שמחת תורה מ-GitHub");
+  return resp.text();
+}
+
+function parseSimchatTorahDataJs(jsText) {
+  const match = jsText.match(/SIMCHAT_TORAH_DATA\s*=\s*(\{[\s\S]*?\n\});/);
+  if (!match) return { title: "", shacharitRows: [] };
+  try {
+    // eslint-disable-next-line no-new-func
+    return Function(`"use strict"; return (${match[1]});`)();
+  } catch (e) {
+    return { title: "", shacharitRows: [] };
+  }
+}
+
+// לא ממיינים לפי שעה - השורות נשמרות בדיוק בסדר שהוזן/סודר בניהול (עם כפתורי ↑/↓).
+function buildSimchatTorahDataJs(title, rows) {
+  const rowsJs = rows
+    .map((r) => `    { label: "${r.label.replace(/"/g, '\\"')}", time: "${r.time}", hidden: ${r.hidden} },`)
+    .join("\n");
+  return `/* ===== שינויים בשחרית של שמחת תורה - נערך מעמוד הניהול (admin.html) =====
+   מוצג בדף הייעודי (simchat-torah.html) ובלוח החלופי בתוך shabbat.html (כשהשבת הקרובה
+   היא שמחת תורה - כ"ב תשרי). שאר זמני השבת (כניסה/יציאה/מנחה ערב/מנחה שבת/ערבית) זהים
+   לשבת רגילה ונלקחים אוטומטית מ-js/shabbat-times-config.js - כאן עורכים רק את בלוק השחרית. */
+const SIMCHAT_TORAH_DATA = {
+  title: "${title.replace(/"/g, '\\"')}",
+  shacharitRows: [
+${rowsJs}
+  ],
+};
+`;
+}
+
 function parseExtraPagesFromJs(jsText) {
   const match = jsText.match(/extraPages:\s*(\[[\s\S]*?\])\s*,?\s*\};/);
   if (!match) return [];
@@ -780,6 +819,12 @@ async function loadIntoForm() {
   document.getElementById("kippur-footer-line2").value = kippurData.footerLine2;
   document.getElementById("kippur-closing").value = kippurData.closing;
 
+  const stJs = await fetchLiveSimchatTorahDataJs();
+  const stData = parseSimchatTorahDataJs(stJs);
+  document.getElementById("st-title-input").value = stData.title;
+  document.getElementById("st-shacharit-rows").innerHTML = "";
+  stData.shacharitRows.forEach((r) => addRow("st-shacharit-rows", r.label, r.time, r.hidden));
+
   const configJs = await fetchLiveSiteConfigJs();
   const extraPages = parseExtraPagesFromJs(configJs);
   renderExtraPagesForm(extraPages);
@@ -812,6 +857,17 @@ async function saveToGithub() {
         return currentHtml.replace(/<ul class="shabbat-list" id="weekday-list">[\s\S]*?<\/ul>/, newWeekdayList);
       },
       `עדכון לוז שבת`,
+      token
+    );
+
+    // מעדכן גם את עותק "תפילות ימי חול" בדף שמחת תורה הייעודי, כדי שיישאר מסונכרן
+    await saveFileToGithub(
+      "simchat-torah.html",
+      (currentHtml) => {
+        const newWeekdayList = buildListHtml("st-weekday-list", getRows("weekday-rows"));
+        return currentHtml.replace(/<ul class="shabbat-list" id="st-weekday-list">[\s\S]*?<\/ul>/, newWeekdayList);
+      },
+      `עדכון תפילות ימי חול בדף שמחת תורה`,
       token
     );
 
@@ -867,6 +923,16 @@ async function saveToGithub() {
         closing: document.getElementById("kippur-closing").value.trim(),
       }),
       `עדכון לוח יום הכיפורים`,
+      token
+    );
+
+    await saveFileToGithub(
+      "js/simchat-torah-config.js",
+      () => buildSimchatTorahDataJs(
+        document.getElementById("st-title-input").value.trim(),
+        getRows("st-shacharit-rows")
+      ),
+      `עדכון שינויי שחרית שמחת תורה`,
       token
     );
 

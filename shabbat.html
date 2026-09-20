@@ -129,6 +129,55 @@
         <div class="shabbat-shalom">שנה טובה וחג שמח!</div>
       </div>
 
+      <!-- לוח שמחת תורה - מוצג אוטומטית במקום לוח השבת הרגיל כאשר השבת הקרובה חלה בכ"ב תשרי
+           (שמחת תורה), וחוזר אוטומטית ללוח הרגיל בשבוע שאחרי (ראו הסקריפט בתחתית העמוד) -->
+      <div class="shabbat-poster" id="simchat-torah-poster" style="display:none">
+        <div class="poster-deco" aria-hidden="true">
+          <img src="images/logo.png" alt="" class="poster-logo">
+          <svg class="poster-mandala" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" stroke="#3a8fd0" fill="none" stroke-width="1">
+            <circle cx="100" cy="100" r="90" stroke-dasharray="4 6"/>
+            <circle cx="100" cy="100" r="70"/>
+            <circle cx="100" cy="100" r="50" stroke-dasharray="2 5"/>
+            <circle cx="100" cy="100" r="30"/>
+            <path d="M100 10 L100 190 M10 100 L190 100"/>
+            <path d="M35 35 L165 165 M35 165 L165 35"/>
+          </svg>
+        </div>
+        <div class="parasha-header">
+          <h3 id="st-title"></h3>
+          <div class="candle-times">
+            <span>כניסת שבת: <span class="value" id="st-candle-time"></span></span>
+            <span>צאת שבת: <span class="value" id="st-shabbat-end-time"></span></span>
+          </div>
+        </div>
+
+        <div class="shabbat-cols">
+          <div class="col">
+            <h4>זמני תפילות שמחת תורה</h4>
+            <ul class="shabbat-list" id="st-shabbat-prayers-list"></ul>
+          </div>
+          <div class="col-divider" aria-hidden="true">
+            <span class="ornament-tip">❦</span>
+            <span class="divider-line"></span>
+            <span class="divider-dot"></span>
+            <span class="divider-line"></span>
+            <span class="ornament-tip">❦</span>
+          </div>
+          <div class="col">
+            <h4>תפילות ימי חול</h4>
+            <ul class="shabbat-list" id="st-weekday-list"></ul>
+
+            <h4 style="margin-top:22px;">שיעורים במהלך השבוע</h4>
+            <ul class="shabbat-list js-shiurim-list"></ul>
+          </div>
+        </div>
+
+        <div class="shabbat-footer">
+          בית הכנסת "השמחה שבאופק" ומרכז קהילתי "אוהב ישראל" | רח' קטיף 36, נתיבות
+        </div>
+        <div class="shabbat-shalom">חג שמח!</div>
+      </div>
+
       <div class="print-btn-wrap no-print">
         <button id="print-shabbat-btn" class="btn outline">🖨️ הדפסת לוז שבת</button>
         <p style="margin-top:8px; font-size:0.85rem; color:var(--color-text-soft);">
@@ -153,13 +202,14 @@
   </div>
 </footer>
 
-<script src="js/netz-data.js?v=9"></script>
-<script src="js/zmanim.js?v=9"></script>
-<script src="js/site-config.js?v=9"></script>
-<script src="js/shiurim-data.js?v=9"></script>
-<script src="js/rosh-hashana-data.js?v=9"></script>
-<script src="js/shabbat-times-config.js?v=9"></script>
-<script src="js/common.js?v=9"></script>
+<script src="js/netz-data.js?v=10"></script>
+<script src="js/zmanim.js?v=10"></script>
+<script src="js/site-config.js?v=10"></script>
+<script src="js/shiurim-data.js?v=10"></script>
+<script src="js/rosh-hashana-data.js?v=10"></script>
+<script src="js/shabbat-times-config.js?v=10"></script>
+<script src="js/simchat-torah-config.js?v=10"></script>
+<script src="js/common.js?v=10"></script>
 <script>
   document.getElementById("print-shabbat-btn").addEventListener("click", () => window.print());
 
@@ -176,6 +226,13 @@
       document.getElementById("shabbat-poster").style.display = "none";
       document.getElementById("rosh-hashana-poster").style.display = "";
     }
+    if (month === "Tishri" && day === 22) {
+      document.getElementById("shabbat-poster").style.display = "none";
+      document.getElementById("simchat-torah-poster").style.display = "";
+      document.getElementById("st-title").textContent = (typeof SIMCHAT_TORAH_DATA !== "undefined" && SIMCHAT_TORAH_DATA.title) || "שמחת תורה";
+      document.getElementById("st-weekday-list").innerHTML = document.getElementById("weekday-list").innerHTML;
+      renderSimchatTorahTimes("st-");
+    }
   })();
 
   // מתאים אוטומטית את גודל לוז השבת כדי שתמיד יכנס לדף הדפסה אחד, גם כשמוסיפים שורות בניהול.
@@ -189,11 +246,16 @@
   const BASE_LEFT_ROWS = 8;
   const BASE_RIGHT_ROWS = 6;
   function fitShabbatPosterToOnePage() {
-    const poster = document.getElementById("shabbat-poster");
+    const regular = document.getElementById("shabbat-poster");
+    const st = document.getElementById("simchat-torah-poster");
+    const poster = regular && regular.style.display !== "none" ? regular
+      : st && st.style.display !== "none" ? st
+      : null;
     if (!poster) return;
-    const weekdayRows = document.querySelectorAll("#weekday-list li").length;
-    const shiurimRows = document.querySelectorAll("#shiurim-list li").length;
-    const prayersRows = document.querySelectorAll("#shabbat-prayers-list li").length;
+    const prefix = poster === st ? "st-" : "";
+    const weekdayRows = document.querySelectorAll(`#${prefix}weekday-list li`).length;
+    const shiurimRows = poster.querySelectorAll(".js-shiurim-list li").length;
+    const prayersRows = document.querySelectorAll(`#${prefix}shabbat-prayers-list li`).length;
     const leftRatio = (weekdayRows + shiurimRows) / BASE_LEFT_ROWS;
     const rightRatio = prayersRows / BASE_RIGHT_ROWS;
     const maxRatio = Math.max(leftRatio, rightRatio, 1);
@@ -201,10 +263,9 @@
   }
   window.addEventListener("beforeprint", fitShabbatPosterToOnePage);
   window.addEventListener("afterprint", () => {
-    const poster = document.getElementById("shabbat-poster");
-    if (poster) {
-      poster.style.removeProperty("--print-scale");
-    }
+    ["shabbat-poster", "simchat-torah-poster"].forEach((id) => {
+      document.getElementById(id)?.style.removeProperty("--print-scale");
+    });
   });
 </script>
 </body>

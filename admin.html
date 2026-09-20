@@ -235,6 +235,17 @@
           </div>
         </details>
 
+        <details class="admin-section">
+          <summary>שינויים בשחרית של שמחת תורה</summary>
+          <p class="admin-help">מוצג בדף הייעודי "שמחת תורה" ובלוח החלופי בתוך דף השבת (אוטומטית, כשהשבת הקרובה חלה בכ"ב תשרי). שאר זמני השבת (כניסה/יציאה/מנחה ערב/מנחה שבת/ערבית) זהים לשבת רגילה ונלקחים אוטומטית מ"זמני תפילות שבת" למעלה - כאן עורכים רק את בלוק השחרית. שורה עם שדה שעה ריק מוצגת כשורת הערה בלי שעה (כמו "עליות לתורה").</p>
+          <div class="admin-field">
+            <label for="st-title-input">כותרת (למשל: שמחת תורה תשפ"ז)</label>
+            <input type="text" id="st-title-input">
+          </div>
+          <div id="st-shacharit-rows"></div>
+          <button type="button" class="admin-add-btn" data-target="st-shacharit-rows">+ הוסף שורה</button>
+        </details>
+
         <div id="schedule-pages-container"></div>
 
         <details class="admin-section">
@@ -262,8 +273,8 @@
   </div>
 </footer>
 
-<script src="js/site-config.js?v=9"></script>
-<script src="js/common.js?v=9"></script>
-<script src="js/admin.js?v=9"></script>
+<script src="js/site-config.js?v=10"></script>
+<script src="js/common.js?v=10"></script>
+<script src="js/admin.js?v=10"></script>
 </body>
 </html>

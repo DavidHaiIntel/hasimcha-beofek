@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>יום הכיפורים | השמחה שבאופק</title>
-<meta name="description" content="לוח זמני תפילות יום הכיפורים בבית הכנסת השמחה שבאופק, נתיבות.">
-<meta property="og:title" content="יום הכיפורים | השמחה שבאופק">
-<meta property="og:description" content="לוח זמני תפילות יום הכיפורים.">
+<title>שמחת תורה | השמחה שבאופק</title>
+<meta name="description" content="לוח זמני תפילות שמחת תורה בבית הכנסת השמחה שבאופק, נתיבות.">
+<meta property="og:title" content="שמחת תורה | השמחה שבאופק">
+<meta property="og:description" content="לוח זמני תפילות שמחת תורה.">
 <meta property="og:image" content="https://davidhaiintel.github.io/hasimcha-beofek/images/logo.png">
-<meta property="og:url" content="https://davidhaiintel.github.io/hasimcha-beofek/kippur.html">
+<meta property="og:url" content="https://davidhaiintel.github.io/hasimcha-beofek/simchat-torah.html">
 <meta property="og:type" content="website">
 <link rel="icon" href="images/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,7 +48,7 @@
   <section class="section">
     <div class="container">
 
-      <div class="shabbat-poster" id="kippur-poster">
+      <div class="shabbat-poster" id="simchat-torah-poster">
         <div class="poster-deco" aria-hidden="true">
           <img src="images/logo.png" alt="" class="poster-logo">
           <svg class="poster-mandala" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" stroke="#3a8fd0" fill="none" stroke-width="1">
@@ -61,27 +61,51 @@
           </svg>
         </div>
         <div class="parasha-header">
-          <h3 class="kippur-title"></h3>
+          <h3 id="st-title"></h3>
           <div class="candle-times">
-            <span>כניסת הצום: <span class="value kippur-fast-start"></span></span>
-            <span>יציאת הצום: <span class="value kippur-fast-end"></span></span>
+            <span>כניסת שבת: <span class="value" id="st-candle-time"></span></span>
+            <span>צאת שבת: <span class="value" id="st-shabbat-end-time"></span></span>
           </div>
         </div>
 
-        <div class="kippur-erev-day"></div>
+        <div class="shabbat-cols">
+          <div class="col">
+            <h4>זמני תפילות שמחת תורה</h4>
+            <ul class="shabbat-list" id="st-shabbat-prayers-list"></ul>
+          </div>
+          <div class="col-divider" aria-hidden="true">
+            <span class="ornament-tip">❦</span>
+            <span class="divider-line"></span>
+            <span class="divider-dot"></span>
+            <span class="divider-line"></span>
+            <span class="ornament-tip">❦</span>
+          </div>
+          <div class="col">
+            <h4>תפילות ימי חול</h4>
+            <ul class="shabbat-list" id="st-weekday-list">
+              <li><span>סליחות ע"מ מניין א'</span><span class="time">5:15</span></li>
+              <li><span>תפילת ותיקין (הודו)</span><span class="time">6:02</span></li>
+              <li><span>תפילת ערבית</span><span class="time">21:00</span></li>
+              <li><span>סליחות ע"מ מניין ב'</span><span class="time">0:00</span></li>
+              <li><span>סליחות אשכנזי</span><span class="time">0:30</span></li>
+            </ul>
 
-        <h3 class="kippur-section-title">יום הכיפורים</h3>
-        <div class="shabbat-cols kippur-columns"></div>
+            <h4 style="margin-top:22px;">שיעורים במהלך השבוע</h4>
+            <ul class="shabbat-list js-shiurim-list"></ul>
+          </div>
+        </div>
 
         <div class="shabbat-footer">
-          <p class="kippur-footer-line1"></p>
-          <p class="kippur-footer-line2"></p>
+          בית הכנסת "השמחה שבאופק" ומרכז קהילתי "אוהב ישראל" | רח' קטיף 36, נתיבות
         </div>
-        <div class="shabbat-shalom kippur-closing"></div>
+        <div class="shabbat-shalom">חג שמח!</div>
       </div>
 
       <div class="print-btn-wrap no-print">
-        <button id="print-kippur-btn" class="btn outline">🖨️ הדפסת הלוח</button>
+        <button id="print-st-btn" class="btn outline">🖨️ הדפסת הלוח</button>
+        <p style="margin-top:8px; font-size:0.85rem; color:var(--color-text-soft);">
+          חשוב: בחלון ההדפסה, ודאו שה"כיוון" (Layout/Orientation) מוגדר על "לרוחב" (Landscape) - כדי שהלוז ייכנס לדף אחד.
+        </p>
       </div>
     </div>
   </section>
@@ -101,11 +125,17 @@
   </div>
 </footer>
 
+<script src="js/netz-data.js?v=10"></script>
+<script src="js/zmanim.js?v=10"></script>
 <script src="js/site-config.js?v=10"></script>
-<script src="js/kippur-data.js?v=10"></script>
+<script src="js/shiurim-data.js?v=10"></script>
+<script src="js/shabbat-times-config.js?v=10"></script>
+<script src="js/simchat-torah-config.js?v=10"></script>
 <script src="js/common.js?v=10"></script>
 <script>
-  document.getElementById("print-kippur-btn").addEventListener("click", () => window.print());
+  document.getElementById("print-st-btn").addEventListener("click", () => window.print());
+  document.getElementById("st-title").textContent = (typeof SIMCHAT_TORAH_DATA !== "undefined" && SIMCHAT_TORAH_DATA.title) || "שמחת תורה";
+  renderSimchatTorahTimes("st-");
 </script>
 </body>
 </html>

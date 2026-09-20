@@ -512,14 +512,9 @@ function calcShabbatTimes(reference = new Date()) {
   };
 }
 
-function renderShabbatTimes() {
-  const el = document.getElementById("candle-time");
-  if (!el) return; // לא בעמוד שבת
-  const t = calcShabbatTimes();
-  if (!t) return;
-
-  // ערכים מחושבים אוטומטית - משמשים כברירת מחדל לכל זמן שלא נדרס ידנית מהניהול
-  const computed = {
+// ערכים מחושבים אוטומטית לזמני שבת (שימוש משותף לשבת רגילה ולשמחת תורה)
+function shabbatComputedValues(t) {
+  return {
     candleLighting: formatTime(t.candleLighting),
     shabbatEnds: formatTime(t.shabbatEnds),
     shirHashirim: formatTime(t.shirHashirim),
@@ -529,6 +524,16 @@ function renderShabbatTimes() {
     minchaShabbat: formatTime(t.minchaShabbat),
     arvitMotzash: formatTime(t.arvitMotzash),
   };
+}
+
+function renderShabbatTimes() {
+  const el = document.getElementById("candle-time");
+  if (!el) return; // לא בעמוד שבת
+  const t = calcShabbatTimes();
+  if (!t) return;
+
+  // ערכים מחושבים אוטומטית - משמשים כברירת מחדל לכל זמן שלא נדרס ידנית מהניהול
+  const computed = shabbatComputedValues(t);
   const cfg = typeof SHABBAT_TIMES_CONFIG !== "undefined" ? SHABBAT_TIMES_CONFIG : null;
 
   document.getElementById("candle-time").textContent = cfg?.candleLighting?.override || computed.candleLighting;
@@ -543,6 +548,40 @@ function renderShabbatTimes() {
       .filter((r) => !r.hidden)
       .map((r) => ({ label: r.label, time: r.override || computed[r.key] || "" }))
       .map((r) => `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`)
+      .join("");
+  }
+}
+
+// מרנדר לוז שמחת תורה: זהה לשבת רגילה (כניסה/יציאה/מנחה ערב/מנחה שבת/ערבית - מאותו חישוב
+// אוטומטי ומאותם override-ים כמו שבת רגילה, ב-SHABBAT_TIMES_CONFIG), חוץ מבלוק השחרית
+// שמוחלף ברצף המיוחד של החג (js/simchat-torah-config.js). idPrefix מאפשר להשתמש באותה
+// פונקציה גם בעמוד הייעודי (simchat-torah.html) וגם בלוח החלופי בתוך shabbat.html.
+function renderSimchatTorahTimes(idPrefix) {
+  const el = document.getElementById(idPrefix + "candle-time");
+  if (!el) return;
+  const t = calcShabbatTimes();
+  if (!t) return;
+  const computed = shabbatComputedValues(t);
+  const cfg = typeof SHABBAT_TIMES_CONFIG !== "undefined" ? SHABBAT_TIMES_CONFIG : null;
+  const stData = typeof SIMCHAT_TORAH_DATA !== "undefined" ? SIMCHAT_TORAH_DATA : null;
+
+  document.getElementById(idPrefix + "candle-time").textContent = cfg?.candleLighting?.override || computed.candleLighting;
+  document.getElementById(idPrefix + "shabbat-end-time").textContent = cfg?.shabbatEnds?.override || computed.shabbatEnds;
+
+  const listEl = document.getElementById(idPrefix + "shabbat-prayers-list");
+  if (listEl && cfg) {
+    const items = [];
+    cfg.rows.filter((r) => !r.hidden).forEach((r) => {
+      if (r.key === "shacharit" && stData) {
+        stData.shacharitRows.filter((sr) => !sr.hidden).forEach((sr) => items.push({ label: sr.label, time: sr.time }));
+      } else {
+        items.push({ label: r.label, time: r.override || computed[r.key] || "" });
+      }
+    });
+    listEl.innerHTML = items
+      .map((r) => r.time
+        ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+        : `<li class="note-line"><span>${r.label}</span></li>`)
       .join("");
   }
 }

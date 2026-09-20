@@ -7,6 +7,7 @@ const SITE_CONFIG = {
     { key: "sukkot", label: "לימוד סוכות", url: "sukkot.html", enabled: true },
     { key: "rosh-hashana", label: "ראש השנה", url: "rosh-hashana.html", enabled: false },
     { key: "kippur", label: "יום כיפור", url: "kippur.html", enabled: true },
+    { key: "simchat-torah", label: "שמחת תורה", url: "simchat-torah.html", enabled: true },
     { key: "Gedalia", label: "צום גדליה", url: "Gedalia.html", enabled: false, schedule: true, dataFile: "js/gedalia-data.js" },
   ],
 };

@@ -171,11 +171,13 @@ function getShulZmanim(date) {
   return { hanetz: sunrise, tefila };
 }
 
-// מרנדר את שעת תפילת ותיקין (הודו) של השבוע הנוכחי (הנץ פחות 18 דקות) בכל שורת "ותיקין"
+// מרנדר את שעת תפילת ותיקין (הודו) של השבוע הרלוונטי (הנץ פחות 18 דקות) בכל שורת "ותיקין"
 // שנמצאת ברשימות "תפילות ימי חול" (מזוהה לפי טקסט התיאור, לא class - כי הרשימה נבנית
 // מחדש מהניהול מתבנית גנרית, וזמן קבוע היה נשאר תקוע/משתבש ככל שהעונה מתקדמת).
-function renderVatikinTime() {
-  const { tefila } = getShulZmanim(new Date());
+// reference - ברירת המחדל "היום" מתאימה ללוח השבת הרגיל (תמיד נצפה קרוב לשבוע הרלוונטי),
+// אבל לעמודי חג עתידיים (כמו שמחת תורה) יש להעביר את התאריך הנכון של אותו שבוע במפורש.
+function renderVatikinTime(reference = new Date()) {
+  const { tefila } = getShulZmanim(reference);
   if (!tefila) return;
   const text = formatTime(tefila);
   document.querySelectorAll(".shabbat-list li").forEach((li) => {
@@ -572,10 +574,12 @@ function renderShabbatTimes() {
 // אוטומטי ומאותם override-ים כמו שבת רגילה, ב-SHABBAT_TIMES_CONFIG), חוץ מבלוק השחרית
 // שמוחלף ברצף המיוחד של החג (js/simchat-torah-config.js). idPrefix מאפשר להשתמש באותה
 // פונקציה גם בעמוד הייעודי (simchat-torah.html) וגם בלוח החלופי בתוך shabbat.html.
-function renderSimchatTorahTimes(idPrefix) {
+// reference - התאריך של שבת שמחת תורה עצמה (לא בהכרח "היום"! אם צופים בעמוד הייעודי
+// שבועות מראש, "היום" הוא עדיין שבוע אחר לגמרי - ראו findSimchatTorahDate).
+function renderSimchatTorahTimes(idPrefix, reference = new Date()) {
   const el = document.getElementById(idPrefix + "candle-time");
   if (!el) return;
-  const t = calcShabbatTimes();
+  const t = calcShabbatTimes(reference);
   if (!t) return;
   const computed = shabbatComputedValues(t);
   const cfg = typeof SHABBAT_TIMES_CONFIG !== "undefined" ? SHABBAT_TIMES_CONFIG : null;
@@ -660,6 +664,16 @@ function findRelevantTishreiStart(reference = new Date()) {
     fwd.setDate(fwd.getDate() + 1);
   }
   return null;
+}
+
+// מוצא את התאריך הלועזי של שמחת תורה (כ"ב תשרי) הרלוונטי הקרוב - משמש לרינדור הלוח
+// הייעודי (simchat-torah.html) עם הזמנים הנכונים גם כשצופים בו הרבה לפני החג עצמו.
+function findSimchatTorahDate(reference = new Date()) {
+  const tishreiStart = findRelevantTishreiStart(reference);
+  if (!tishreiStart) return null;
+  const d = new Date(tishreiStart);
+  d.setDate(d.getDate() + 21);
+  return d;
 }
 
 // מרנדר את זמני הנץ המדויקים לכל יום מחול המועד סוכות (ט"ז-כ"א בתשרי) בעמוד sukkot.html

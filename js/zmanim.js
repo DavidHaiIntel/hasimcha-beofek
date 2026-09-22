@@ -171,6 +171,22 @@ function getShulZmanim(date) {
   return { hanetz: sunrise, tefila };
 }
 
+// מרנדר את שעת תפילת ותיקין (הודו) של השבוע הנוכחי (הנץ פחות 18 דקות) בכל שורת "ותיקין"
+// שנמצאת ברשימות "תפילות ימי חול" (מזוהה לפי טקסט התיאור, לא class - כי הרשימה נבנית
+// מחדש מהניהול מתבנית גנרית, וזמן קבוע היה נשאר תקוע/משתבש ככל שהעונה מתקדמת).
+function renderVatikinTime() {
+  const { tefila } = getShulZmanim(new Date());
+  if (!tefila) return;
+  const text = formatTime(tefila);
+  document.querySelectorAll(".shabbat-list li").forEach((li) => {
+    const label = li.querySelector("span:first-child")?.textContent || "";
+    if (label.includes("ותיקין")) {
+      const timeEl = li.querySelector(".time");
+      if (timeEl) timeEl.textContent = text;
+    }
+  });
+}
+
 /* ===== ימים טובים (בישראל) - אין בהם מניין ותיקין ===== 
    בחול המועד (סוכות/פסח) יש תפילת ותיקין כרגיל - הם לא כלולים ברשימה.
    בראש השנה וביום כיפור כן יש תפילה (בשעה קבועה - ראו FIXED_TEFILA_DAYS למטה),
@@ -621,13 +637,27 @@ async function renderParashaName() {
   }
 }
 
-// מוצא את יום א' בתשרי (ראש השנה) הרלוונטי הבא - החל מהיום, ולא ראש השנה שכבר עבר
+// מוצא את יום א' בתשרי (ראש השנה) הרלוונטי לחג הקרוב (סוכות/שמחת תורה) - לא בהכרח הבא
+// קדימה: אם היום נמצא כבר בתוך המחזור (אחרי ראש השנה אך לפני תום שמחת תורה, כ"ב תשרי),
+// משתמשים בא' תשרי של המחזור הזה (לא מדלגים לשנה הבאה). אחרת מחפשים קדימה את הבא.
 function findRelevantTishreiStart(reference = new Date()) {
-  const d = new Date(reference);
+  let back = new Date(reference);
+  let recentStart = null;
   for (let i = 0; i < 400; i++) {
-    const ym = getHebrewYM(d);
-    if (ym.month === "Tishri" && ym.day === 1) return new Date(d);
-    d.setDate(d.getDate() + 1);
+    const ym = getHebrewYM(back);
+    if (ym.month === "Tishri" && ym.day === 1) { recentStart = new Date(back); break; }
+    back.setDate(back.getDate() - 1);
+  }
+  if (recentStart) {
+    const cycleEnd = new Date(recentStart);
+    cycleEnd.setDate(cycleEnd.getDate() + 22); // עד שמחת תורה
+    if (cycleEnd >= reference) return recentStart;
+  }
+  const fwd = new Date(reference);
+  for (let i = 0; i < 400; i++) {
+    const ym = getHebrewYM(fwd);
+    if (ym.month === "Tishri" && ym.day === 1) return new Date(fwd);
+    fwd.setDate(fwd.getDate() + 1);
   }
   return null;
 }
@@ -667,6 +697,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initMonthNav();
   renderShabbatTimes();
   renderParashaName();
+  renderVatikinTime();
   renderSukkotNetzTable();
   // בעמוד לוח הזמנים החודשי - למקד את הגלילה על שורת "היום" בטעינה הראשונית
   const todayRow = document.querySelector("#zman-table-body tr.today");

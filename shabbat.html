@@ -228,7 +228,8 @@
       document.getElementById("simchat-torah-poster").style.display = "";
       document.getElementById("st-title").textContent = (typeof SIMCHAT_TORAH_DATA !== "undefined" && SIMCHAT_TORAH_DATA.title) || "שמחת תורה";
       document.getElementById("st-weekday-list").innerHTML = document.getElementById("weekday-list").innerHTML;
-      renderSimchatTorahTimes("st-");
+      renderSimchatTorahTimes("st-", saturday);
+      document.addEventListener("DOMContentLoaded", () => renderVatikinTime(saturday));
     }
   })();
 

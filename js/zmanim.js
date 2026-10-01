@@ -490,10 +490,14 @@ function isIsraelDST(date) {
   return israelOffsetMinutes(date) >= 180;
 }
 
-// מוצא את יום שישי ושבת הקרובים (או של השבוע הנוכחי אם היום כבר שישי/שבת)
+// מוצא את יום שישי ושבת הקרובים (או של השבוע הנוכחי אם היום כבר שישי/שבת).
+// התאריך נקבע תמיד לפי לוח השנה בישראל (נתיבות), ולא לפי שעון/אזור הזמן של המכשיר -
+// כך שגולש מחו"ל או עם שעון לא-ישראלי יראה בדיוק את אותה שבת כמו בנתיבות.
 function getShabbatDates(reference) {
-  const d = new Date(reference);
-  d.setHours(12, 0, 0, 0); // צהריים כדי להימנע מבעיות שינוי שעון
+  // לוקחים את תאריך "היום" כפי שהוא בישראל (Y-M-D), ובונים ממנו Date בצהריים מקומי של
+  // אותו תאריך לוחי - כך getDay/getDate עובדים נכון בלי תלות באזור הזמן של המכשיר.
+  const [y, mo, dd] = israelGregorianFormatter.format(new Date(reference)).split("-").map(Number);
+  const d = new Date(y, mo - 1, dd, 12, 0, 0);
   const dow = d.getDay(); // 0=ראשון ... 5=שישי, 6=שבת
   let friday;
   if (dow === 6) {

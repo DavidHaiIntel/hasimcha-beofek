@@ -129,12 +129,21 @@ const israelGregorianFormatter = new Intl.DateTimeFormat("en-CA", {
   year: "numeric", month: "2-digit", day: "2-digit",
 });
 function israelOffsetMinutes(referenceDate) {
+  // מחשב את היסט אזור הזמן של ישראל (בדקות) בלי התכונה timeZoneName:"shortOffset" -
+  // שהיא חדשה (ES2022) ואינה נתמכת ב-iOS מתחת ל-15.4 ובאנדרואידים ישנים, שם היא זורקת
+  // שגיאה ומפילה את כל חישוב הזמנים (מה שגרם להצגת שעות ברירת-המחדל הישנות בטלפונים).
+  // במקום זה: מפרמטים את הזמן המקומי בישראל ומשווים ל-UTC - נתמך בכל מכשיר עם Intl.
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: NETIVOT.timeZone,
-    timeZoneName: "shortOffset",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
   }).formatToParts(referenceDate);
-  const m = (parts.find((p) => p.type === "timeZoneName")?.value || "GMT+2").match(/GMT([+-]\d+)/);
-  return (m ? Number(m[1]) : 2) * 60;
+  const map = {};
+  parts.forEach((p) => { map[p.type] = p.value; });
+  let hour = Number(map.hour);
+  if (hour === 24) hour = 0; // חלק מהמנועים מציגים חצות כ-24
+  const asIfUTC = Date.UTC(Number(map.year), Number(map.month) - 1, Number(map.day), hour, Number(map.minute), Number(map.second));
+  return Math.round((asIfUTC - referenceDate.getTime()) / 60000);
 }
 function israelTimeToDate(referenceDate, hour, minute, second) {
   const [y, mo, d] = israelGregorianFormatter.format(referenceDate).split("-").map(Number);
@@ -469,12 +478,9 @@ function roundDownToMinutes(date, minutes) {
 }
 
 function isIsraelDST(date) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: NETIVOT.timeZone,
-    timeZoneName: "shortOffset",
-  }).formatToParts(date);
-  const offset = parts.find((p) => p.type === "timeZoneName")?.value || "";
-  return offset.includes("+3");
+  // שעון קיץ בישראל = היסט של +3 שעות (180 דק') מ-UTC. משתמש ב-israelOffsetMinutes
+  // (שנתמך בכל מכשיר) במקום ב-shortOffset שקרס במכשירים ישנים.
+  return israelOffsetMinutes(date) >= 180;
 }
 
 // מוצא את יום שישי ושבת הקרובים (או של השבוע הנוכחי אם היום כבר שישי/שבת)
@@ -706,13 +712,16 @@ function renderSukkotNetzTable() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  renderTodayCard();
-  renderMonthTable();
-  initMonthNav();
-  renderShabbatTimes();
-  renderParashaName();
-  renderVatikinTime();
-  renderSukkotNetzTable();
+  // כל רינדור בעטיפת הגנה נפרדת - כך שכשל באחד (למשל בדף/מכשיר מסוים) לא ימנע מהשאר לרוץ
+  // ולא ישאיר ערכי ברירת-מחדל ישנים על המסך.
+  const safe = (fn) => { try { fn(); } catch (e) { /* ממשיכים לשאר הרינדורים */ } };
+  safe(renderTodayCard);
+  safe(renderMonthTable);
+  safe(initMonthNav);
+  safe(renderShabbatTimes);
+  safe(renderParashaName);
+  safe(renderVatikinTime);
+  safe(renderSukkotNetzTable);
   // בעמוד לוח הזמנים החודשי - למקד את הגלילה על שורת "היום" בטעינה הראשונית
   const todayRow = document.querySelector("#zman-table-body tr.today");
   if (todayRow) {

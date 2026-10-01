@@ -19,6 +19,14 @@ function sortRowsByTime(rows) {
     .map((x) => x.row);
 }
 
+// רישום Service Worker לפתרון בעיית מטמון בטלפונים (ראו sw.js) - updateViaCache:"none"
+// מבטיח שגם סקריפט ה-SW עצמו לעולם לא יוגש מהמטמון, כך שעדכונים מתפשטים מהר.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const toggle = document.querySelector(".nav-toggle");
   const nav = document.querySelector(".main-nav");

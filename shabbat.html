@@ -199,14 +199,14 @@
   </div>
 </footer>
 
-<script src="js/netz-data.js?v=15"></script>
-<script src="js/zmanim.js?v=15"></script>
-<script src="js/site-config.js?v=15"></script>
-<script src="js/shiurim-data.js?v=15"></script>
-<script src="js/rosh-hashana-data.js?v=15"></script>
-<script src="js/shabbat-times-config.js?v=15"></script>
-<script src="js/simchat-torah-config.js?v=15"></script>
-<script src="js/common.js?v=15"></script>
+<script src="js/netz-data.js?v=16"></script>
+<script src="js/zmanim.js?v=16"></script>
+<script src="js/site-config.js?v=16"></script>
+<script src="js/shiurim-data.js?v=16"></script>
+<script src="js/rosh-hashana-data.js?v=16"></script>
+<script src="js/shabbat-times-config.js?v=16"></script>
+<script src="js/simchat-torah-config.js?v=16"></script>
+<script src="js/common.js?v=16"></script>
 <script>
   document.getElementById("print-shabbat-btn").addEventListener("click", () => window.print());
 
@@ -214,11 +214,9 @@
   // חוזר אוטומטית ללוח הרגיל בשבוע שאחרי החג, בלי צורך בעדכון ידני.
   (function () {
     const { saturday } = getShabbatDates(new Date());
-    const parts = new Intl.DateTimeFormat("en-u-ca-hebrew", {
-      timeZone: NETIVOT.timeZone, day: "numeric", month: "numeric",
-    }).formatToParts(saturday);
-    const day = Number(parts.find((p) => p.type === "day")?.value);
-    const month = parts.find((p) => p.type === "month")?.value;
+    // משתמשים ב-getHebrewYM (מתוקן ומנורמל ב-zmanim.js) במקום formatter מקומי עם month:"numeric"
+    // שהחזיר מספר במקום שם במכשירים אמיתיים וכך שבר את זיהוי החג (ראו ההערה ב-zmanim.js).
+    const { day, month } = getHebrewYM(saturday);
     if (month === "Tishri" && day === 1) {
       document.getElementById("shabbat-poster").style.display = "none";
       document.getElementById("rosh-hashana-poster").style.display = "";

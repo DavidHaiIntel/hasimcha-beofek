@@ -220,9 +220,16 @@ const FIXED_TEFILA_DAYS = [
 const hebrewCivilFormatter = new Intl.DateTimeFormat("en-u-ca-hebrew", {
   timeZone: NETIVOT.timeZone,
   day: "numeric",
-  month: "numeric",
+  month: "long",
   year: "numeric",
 });
+// מנרמל את שם החודש העברי לצורה קנונית. קריטי: עם month:"numeric" מנועים שונים
+// מחזירים מספר (על רוב המכשירים) ולא שם - מה ששבר את זיהוי החגים. לכן משתמשים
+// ב-"long" (שם), ומאחדים את הכתיב Tishri/Tishrei ל-"Tishri" אחד.
+function normalizeHebrewMonth(m) {
+  if (typeof m === "string" && m.indexOf("Tishr") === 0) return "Tishri";
+  return m;
+}
 
 // בודק את יום השבוע לפי אזור הזמן של נתיבות (לא לפי אזור הזמן של המכשיר!) - חשוב סביב חצות
 const israelWeekdayFormatter = new Intl.DateTimeFormat("en-US", {
@@ -240,7 +247,7 @@ function getDayStatus(date) {
   let fixedTefila = null;
   try {
     const parts = hebrewCivilFormatter.formatToParts(date);
-    const month = parts.find((p) => p.type === "month")?.value;
+    const month = normalizeHebrewMonth(parts.find((p) => p.type === "month")?.value);
     const day = Number(parts.find((p) => p.type === "day")?.value);
     yomTov = YOM_TOV_DAYS.find((yt) => yt.month === month && yt.day === day) || null;
     fixedTefila = FIXED_TEFILA_DAYS.find((ft) => ft.month === month && ft.day === day) || null;
@@ -370,7 +377,7 @@ function getHebrewYM(date) {
   const parts = hebrewCivilFormatter.formatToParts(date);
   return {
     day: Number(parts.find((p) => p.type === "day")?.value),
-    month: parts.find((p) => p.type === "month")?.value,
+    month: normalizeHebrewMonth(parts.find((p) => p.type === "month")?.value),
     year: Number(parts.find((p) => p.type === "year")?.value),
   };
 }

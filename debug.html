@@ -19,8 +19,8 @@
 <h1>אבחון זמני שבת — צלמו מסך ושלחו</h1>
 <div id="out">טוען…</div>
 
-<script src="js/netz-data.js?v=15"></script>
-<script src="js/zmanim.js?v=15"></script>
+<script src="js/netz-data.js?v=16"></script>
+<script src="js/zmanim.js?v=16"></script>
 <script>
 (function () {
   const out = document.getElementById("out");
@@ -46,13 +46,22 @@
   add("שישי/שבת הקרובים שהקוד מחשב", sd);
 
   // 5. התאריך העברי של אותה שבת (זה מה שמפעיל את זיהוי שמחת תורה)
-  add("תאריך עברי של השבת (זיהוי החג)", safe(() => {
+  add("תאריך עברי גולמי month:numeric (הבאג הישן)", safe(() => {
     const { saturday } = getShabbatDates(new Date());
     const parts = new Intl.DateTimeFormat("en-u-ca-hebrew", { timeZone: NETIVOT.timeZone, day: "numeric", month: "numeric" }).formatToParts(saturday);
     const month = parts.find((p) => p.type === "month") ? parts.find((p) => p.type === "month").value : "?";
     const day = parts.find((p) => p.type === "day") ? parts.find((p) => p.type === "day").value : "?";
     return "month='" + month + "'  day='" + day + "'";
   }));
+  add("תאריך עברי month:long (התיקון - אמור Tishri)", safe(() => {
+    const { saturday } = getShabbatDates(new Date());
+    const ym = getHebrewYM(saturday);
+    return "month='" + ym.month + "'  day='" + ym.day + "'";
+  }), (safe(() => getHebrewYM(getShabbatDates(new Date()).saturday).month) === "Tishri") ? "ok" : "bad");
+  add("זיהוי שמחת תורה (כ\"ב תשרי) עובד?", safe(() => {
+    const ym = getHebrewYM(getShabbatDates(new Date()).saturday);
+    return (ym.month === "Tishri" && ym.day === 22) ? "כן ✓ יוצג לוז שמחת תורה" : "לא (" + ym.month + " " + ym.day + ")";
+  }), (safe(() => { const ym = getHebrewYM(getShabbatDates(new Date()).saturday); return ym.month === "Tishri" && ym.day === 22; })) ? "ok big" : "bad big");
 
   // 6. הזמנים המחושבים בפועל לשבת הקרובה
   add("כניסת/יציאת שבת מחושבים", safe(() => {

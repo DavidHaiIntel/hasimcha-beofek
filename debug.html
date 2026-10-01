@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>אבחון זמנים</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; padding: 16px; background: #f4f6f8; color: #111; }
+  h1 { font-size: 1.2rem; }
+  .row { background: #fff; border: 1px solid #d5dee2; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .k { font-size: 0.8rem; color: #667; }
+  .v { font-size: 1.05rem; font-weight: 700; direction: ltr; text-align: left; word-break: break-all; }
+  .ok { color: #1f7a4a; } .bad { color: #b00020; }
+  .big { font-size: 1.5rem; }
+</style>
+</head>
+<body>
+<h1>אבחון זמני שבת — צלמו מסך ושלחו</h1>
+<div id="out">טוען…</div>
+
+<script src="js/netz-data.js?v=15"></script>
+<script src="js/zmanim.js?v=15"></script>
+<script>
+(function () {
+  const out = document.getElementById("out");
+  const rows = [];
+  const add = (k, v, cls) => rows.push(`<div class="row"><div class="k">${k}</div><div class="v ${cls||''}">${v}</div></div>`);
+  const safe = (fn, fb) => { try { return fn(); } catch (e) { return (fb || "ERR") + ": " + e.message; } };
+
+  // 1. מה המכשיר חושב שעכשיו
+  add("השעה/תאריך במכשיר (new Date)", safe(() => new Date().toString()));
+  add("אזור הזמן של המכשיר", safe(() => Intl.DateTimeFormat().resolvedOptions().timeZone));
+
+  // 2. מבחן בידוד: עיצוב רגע קבוע וידוע. 2026-10-03T14:57:00Z = 17:57 בשעון ישראל (קיץ).
+  // אם כאן מופיע משהו אחר מ-17:57 - הבעיה היא ב-formatTime/אזור הזמן, לא בחישוב התאריך.
+  const fixedInstant = new Date("2026-10-03T14:57:00Z");
+  add("מבחן בידוד — רגע קבוע אמור להציג 17:57", safe(() => formatTime(fixedInstant)),
+      safe(() => formatTime(fixedInstant)) === "17:57" ? "ok big" : "bad big");
+
+  // 3. ההיסט המחושב לישראל (אמור להיות 180 בקיץ)
+  add("היסט ישראל מחושב (דקות, אמור 180)", safe(() => israelOffsetMinutes(new Date())));
+
+  // 4. שבת הקרובה שהקוד מחשב
+  const sd = safe(() => { const s = getShabbatDates(new Date()); return s.friday.toDateString() + "  →  " + s.saturday.toDateString(); });
+  add("שישי/שבת הקרובים שהקוד מחשב", sd);
+
+  // 5. התאריך העברי של אותה שבת (זה מה שמפעיל את זיהוי שמחת תורה)
+  add("תאריך עברי של השבת (זיהוי החג)", safe(() => {
+    const { saturday } = getShabbatDates(new Date());
+    const parts = new Intl.DateTimeFormat("en-u-ca-hebrew", { timeZone: NETIVOT.timeZone, day: "numeric", month: "numeric" }).formatToParts(saturday);
+    const month = parts.find((p) => p.type === "month") ? parts.find((p) => p.type === "month").value : "?";
+    const day = parts.find((p) => p.type === "day") ? parts.find((p) => p.type === "day").value : "?";
+    return "month='" + month + "'  day='" + day + "'";
+  }));
+
+  // 6. הזמנים המחושבים בפועל לשבת הקרובה
+  add("כניסת/יציאת שבת מחושבים", safe(() => {
+    const t = calcShabbatTimes(new Date());
+    return formatTime(t.candleLighting) + " / " + formatTime(t.shabbatEnds);
+  }));
+
+  // 7. פרטי הדפדפן
+  add("דפדפן (userAgent)", navigator.userAgent);
+
+  out.innerHTML = rows.join("");
+})();
+</script>
+</body>
+</html>

@@ -476,7 +476,7 @@ function initMonthNav() {
    - מנחה/קבלת שבת (ערב שבת) = שקיעת יום שישי פחות 18 דק', מעוגל כלפי מטה ל-5 הדק' הקרובות.
    - שחרית של שבת = 8:30 בשעון קיץ, 8:00 בשעון חורף (קבוע, לא תלוי שקיעה).
    - לימוד הורים וילדים = 45 דק' לפני מנחה של שבת.
-   - מנחה של שבת (צהריים) = בערך שעה לפני שקיעת יום שבת, מעוגל כלפי מטה ל-15 הדק' הקרובות.
+   - מנחה של שבת (צהריים) = חצי שעה עגולה (00:/30:), לפחות 50 דק' לפני שקיעת יום שבת.
    - ערבית מוצ"ש = 8 דק' לפני צאת שבת (המוצג למעלה).
    כל העיגולים לעיל הם תמיד כלפי מטה (לא לקרוב ביותר) - ראו roundDownToMinutes. */
 function roundDownToMinutes(date, minutes) {
@@ -535,8 +535,10 @@ function calcShabbatTimes(reference = new Date()) {
   );
   const shirHashirim = new Date(minchaErev.getTime() - 10 * 60000);
   const shacharit = isIsraelDST(saturday) ? "8:30" : "8:00";
+  // מנחה של שבת: חצי שעה עגולה (00:/30:) לפחות 50 דק' לפני שקיעה - מעגלים כלפי מטה
+  // מ-(שקיעה פחות 50) לחצי השעה, כך שתמיד נופל על :00/:30 ותמיד לפחות 50 דק' לפני השקיעה.
   const minchaShabbat = roundDownToMinutes(
-    new Date(saturdaySun.sunset.getTime() - 60 * 60000), 15
+    new Date(saturdaySun.sunset.getTime() - 50 * 60000), 30
   );
   const limudHorim = new Date(minchaShabbat.getTime() - 45 * 60000);
   const arvitMotzash = new Date(shabbatEnds.getTime() - 8 * 60000);

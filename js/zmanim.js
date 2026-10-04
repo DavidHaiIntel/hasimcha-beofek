@@ -536,10 +536,13 @@ function calcShabbatTimes(reference = new Date()) {
   const shirHashirim = new Date(minchaErev.getTime() - 10 * 60000);
   const shacharit = isIsraelDST(saturday) ? "8:30" : "8:00";
   // מנחה של שבת: חצי שעה עגולה (00:/30:) לפחות 50 דק' לפני שקיעה - מעגלים כלפי מטה
-  // מ-(שקיעה פחות 50) לחצי השעה, כך שתמיד נופל על :00/:30 ותמיד לפחות 50 דק' לפני השקיעה.
-  const minchaShabbat = roundDownToMinutes(
+  // מ-(שקיעה פחות 50) לחצי השעה. רצפה: לעולם לא לפני 16:00 (גם אם זה פחות מ-50 דק' לפני
+  // השקיעה בשבתות החורף העמוקות שבהן השקיעה מוקדמת מאוד) - הרצפה של 16:00 גוברת.
+  let minchaShabbat = roundDownToMinutes(
     new Date(saturdaySun.sunset.getTime() - 50 * 60000), 30
   );
+  const minchaFloor = israelTimeToDate(saturday, 16, 0, 0);
+  if (minchaShabbat.getTime() < minchaFloor.getTime()) minchaShabbat = minchaFloor;
   const limudHorim = new Date(minchaShabbat.getTime() - 45 * 60000);
   const arvitMotzash = new Date(shabbatEnds.getTime() - 8 * 60000);
 

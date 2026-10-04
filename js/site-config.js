@@ -4,10 +4,10 @@
    כשדף כבוי, הקישור אליו נעלם מהניווט בכל האתר, והדף עצמו מציג הודעה במקום התוכן. */
 const SITE_CONFIG = {
   extraPages: [
-    { key: "sukkot", label: "לימוד סוכות", url: "sukkot.html", enabled: true },
+    { key: "sukkot", label: "לימוד סוכות", url: "sukkot.html", enabled: false },
     { key: "rosh-hashana", label: "ראש השנה", url: "rosh-hashana.html", enabled: false },
     { key: "kippur", label: "יום כיפור", url: "kippur.html", enabled: false },
-    { key: "simchat-torah", label: "שמחת תורה", url: "simchat-torah.html", enabled: true },
+    { key: "simchat-torah", label: "שמחת תורה", url: "simchat-torah.html", enabled: false },
     { key: "Gedalia", label: "צום גדליה", url: "Gedalia.html", enabled: false, schedule: true, dataFile: "js/gedalia-data.js" },
   ],
 };

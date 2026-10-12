@@ -4,7 +4,7 @@
 const SHIURIM_LIST = [
   { label: "ראשון - שיעור גמרא, עמיחי יומטוביאן (לבנים ז-ח)", time: "20:00", hidden: false, link: "https://chat.whatsapp.com/KVDPOlkBoOuJPkCGfbRrwl" },
   { label: "שני - שיעור תנ\"ך, הרב דוד אסולין", time: "21:15", hidden: false, link: "https://chat.whatsapp.com/B7OzaKxM7MVL8CHoyTXa7j" },
-  { label: "רביעי - שיעור בכתבי הרב קוק, הרב אסף", time: "21:15", hidden: false },
+  { label: "רביעי - שיעור בכתבי הרב קוק, הרב אסף", time: "21:15", hidden: false, link: "https://chat.whatsapp.com/JBFs773O8Q8JNwJCioz3Xq" },
   { label: "חמישי - שיעור כוזרי לנוער, ירון יאראק", time: "20:00", hidden: false, link: "https://chat.whatsapp.com/KVDPOlkBoOuJPkCGfbRrwl" },
   { label: "שישי - שיעור גמרא לנוער במסכת בבא קמא (לאחר שחרית)", time: "", hidden: false, link: "https://chat.whatsapp.com/KVDPOlkBoOuJPkCGfbRrwl" },
   { label: "שבת - חבורה בצדקת הצדיק", time: "8:00", hidden: false },

@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
 <title>לוח להצגה | השמחה שבאופק</title>
-<link rel="icon" href="images/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -19,61 +18,79 @@
   body {
     font-family: "Heebo", Arial, sans-serif;
     background: radial-gradient(circle at 50% 0%, #f3f8fc 0%, #e7eff6 60%, #dde8f1 100%);
-    color: var(--ink);
-    height: 100vh; overflow: hidden;
+    color: var(--ink); height: 100vh; overflow: hidden;
     display: flex; flex-direction: column;
   }
   /* ===== סרגל עליון ===== */
   .tv-top {
     display: flex; align-items: center; gap: 2vw;
-    padding: 1.6vh 2.4vw; background: linear-gradient(90deg, var(--navy), var(--navy-soft));
+    padding: 1.3vh 2.2vw; background: linear-gradient(90deg, var(--navy), var(--navy-soft));
     color: #fff; box-shadow: 0 2px 14px rgba(0,0,0,.18);
   }
-  .tv-top img { height: 7.5vh; }
+  .tv-top img { height: 7vh; }
   .tv-brand { flex: 1; }
-  .tv-brand h1 { margin: 0; font-size: 3.1vh; font-weight: 800; }
-  .tv-brand p { margin: .3vh 0 0; font-size: 2vh; opacity: .85; font-weight: 500; }
+  .tv-brand h1 { margin: 0; font-size: 2.9vh; font-weight: 800; }
+  .tv-brand p { margin: .3vh 0 0; font-size: 1.9vh; opacity: .85; font-weight: 500; }
   .tv-clock { text-align: center; }
-  .tv-clock .time { font-size: 6.2vh; font-weight: 900; line-height: 1; direction: ltr; letter-spacing: 1px; }
-  .tv-clock .greg { font-size: 1.9vh; opacity: .9; margin-top: .4vh; }
-  .tv-clock .heb { font-size: 1.9vh; opacity: .9; }
-  /* ===== גוף: שתי עמודות ===== */
-  .tv-body { flex: 1; display: grid; grid-template-columns: 1.05fr 1fr; gap: 0; min-height: 0; }
-  .tv-col { padding: 2.2vh 2.4vw; display: flex; flex-direction: column; min-height: 0; }
-  .tv-col.left { background: rgba(255,255,255,.55); border-inline-start: 4px solid var(--gold); }
+  .tv-clock .time { font-size: 5.6vh; font-weight: 900; line-height: 1; direction: ltr; letter-spacing: 1px; }
+  .tv-clock .greg, .tv-clock .heb { font-size: 1.8vh; opacity: .9; }
+  /* ===== גוף: שלוש עמודות ===== */
+  .tv-body { flex: 1; display: grid; grid-template-columns: 1fr 1.15fr 1fr; min-height: 0; }
+  .tv-col { padding: 1.8vh 1.8vw; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .tv-col.today { background: rgba(255,255,255,.55); }
+  .tv-col.shiurim { background: rgba(255,255,255,.4); }
+  .tv-col + .tv-col { border-inline-start: 2px solid var(--line); }
   .tv-col h2 {
-    margin: 0 0 1.6vh; font-size: 3.2vh; color: var(--navy); text-align: center;
-    padding-bottom: 1vh; border-bottom: 3px solid var(--teal); font-weight: 800;
+    margin: 0 0 1.2vh; font-size: 2.9vh; color: var(--navy); text-align: center;
+    padding-bottom: .8vh; border-bottom: 3px solid var(--teal); font-weight: 800;
   }
-  /* ---- ותיקין היומי (עמודה שמאל) ---- */
-  .vatikin-box { text-align: center; margin: 1vh 0 2.2vh; }
-  .vatikin-box .lead { font-size: 2.4vh; color: var(--soft); font-weight: 600; }
-  .vatikin-box .big { font-size: 11vh; font-weight: 900; color: var(--teal); line-height: 1; direction: ltr; }
-  .vatikin-box .sub { font-size: 2.3vh; color: var(--ink); margin-top: .6vh; }
+  /* ---- ותיקין היומי ---- */
+  .vatikin-box { text-align: center; margin: .6vh 0 1.6vh; }
+  .vatikin-box .lead { font-size: 2.1vh; color: var(--soft); font-weight: 600; }
+  .vatikin-box .big { font-size: 9.5vh; font-weight: 900; color: var(--teal); line-height: 1; direction: ltr; }
+  .vatikin-box .sub { font-size: 2.1vh; color: var(--ink); margin-top: .5vh; }
   .vatikin-box .sub .hanetz { color: var(--gold); font-weight: 800; direction: ltr; display: inline-block; }
-  .vatikin-box.noon { }
-  .vatikin-box .no-vatikin { font-size: 4.5vh; font-weight: 800; color: var(--navy-soft); }
+  .vatikin-box .no-vatikin { font-size: 4vh; font-weight: 800; color: var(--navy-soft); }
+  .weekday-title { font-size: 2.2vh; font-weight: 700; color: var(--navy-soft); margin: 1vh 0 .4vh; text-align: center; }
   /* ---- רשימות ---- */
-  .tv-list { list-style: none; margin: 0; padding: 0; flex: 1; }
+  .tv-list { list-style: none; margin: 0; padding: 0; }
   .tv-list li {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 1.35vh 1vw; font-size: 2.9vh; border-bottom: 1.5px dashed var(--line);
+    padding: 1vh .6vw; font-size: 2.5vh; border-bottom: 1.5px dashed var(--line);
   }
   .tv-list li:last-child { border-bottom: none; }
   .tv-list li .lbl { font-weight: 600; }
-  .tv-list li .tm { font-weight: 800; color: var(--navy); direction: ltr; font-size: 3.1vh; }
-  .tv-list li.note { justify-content: center; font-size: 2vh; font-style: italic; color: var(--soft); border-bottom: none; padding: .6vh 0; }
+  .tv-list li .tm { font-weight: 800; color: var(--navy); direction: ltr; font-size: 2.7vh; white-space: nowrap; }
+  .tv-list li.note { justify-content: center; font-size: 1.8vh; font-style: italic; color: var(--soft); border-bottom: none; padding: .5vh 0; }
   /* ---- כותרת שבת + כניסה/יציאה ---- */
-  .shabbat-head { text-align: center; margin-bottom: 1.4vh; }
-  .shabbat-head .parasha { font-size: 3.4vh; font-weight: 800; color: var(--navy); }
-  .candles { display: flex; justify-content: center; gap: 2.4vw; margin-top: 1vh; }
-  .candles .c { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 1vh 1.6vw; min-width: 11vw; }
-  .candles .c .k { font-size: 2vh; color: var(--soft); font-weight: 600; }
-  .candles .c .v { font-size: 4.4vh; font-weight: 900; color: var(--ink); direction: ltr; line-height: 1.1; }
+  .shabbat-head { text-align: center; margin-bottom: 1.1vh; }
+  .shabbat-head .parasha { font-size: 3vh; font-weight: 800; color: var(--navy); }
+  .candles { display: flex; justify-content: center; gap: 1.4vw; margin-top: .9vh; }
+  .candles .c { background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: .8vh 1.3vw; min-width: 9vw; }
+  .candles .c .k { font-size: 1.8vh; color: var(--soft); font-weight: 600; }
+  .candles .c .v { font-size: 3.8vh; font-weight: 900; color: var(--ink); direction: ltr; line-height: 1.1; }
   .candles .c.in { border-color: var(--gold); }
   .candles .c.out { border-color: var(--teal); }
-  .tv-foot { text-align: center; padding: 1vh; font-size: 1.7vh; color: var(--soft); background: rgba(255,255,255,.5); }
-  .weekday-title { font-size: 2.5vh; font-weight: 700; color: var(--navy-soft); margin: 1.4vh 0 .6vh; text-align: center; }
+  /* ---- הודעות / חגים ---- */
+  .notices { margin-top: auto; }
+  .notice-box {
+    border-radius: 14px; padding: 1.3vh 1.2vw; margin-top: 1.2vh; font-size: 2.2vh; line-height: 1.4;
+    text-align: center; font-weight: 600;
+  }
+  .notice-box.holiday { background: linear-gradient(135deg, #fff5e0, #ffe9c2); border: 2px solid var(--gold); color: #8a6a1f; }
+  .notice-box.admin { background: #eef6f6; border: 2px solid var(--teal); color: #1e5f5f; }
+  .notice-box .nt { display: block; font-size: 1.7vh; font-weight: 800; opacity: .8; margin-bottom: .4vh; }
+  /* ===== פס QR תחתון ===== */
+  .tv-qr-bar {
+    display: flex; align-items: center; gap: 2vw;
+    padding: 1.2vh 2.2vw; background: linear-gradient(90deg, var(--navy-soft), var(--navy));
+    color: #fff;
+  }
+  .qr-items { display: flex; gap: 2.4vw; flex: 1; justify-content: center; }
+  .qr-item { text-align: center; }
+  .qr-item img { height: 15vh; width: 15vh; background: #fff; border-radius: 10px; padding: .5vh; display: block; }
+  .qr-item .cap { font-size: 2vh; font-weight: 700; margin-top: .5vh; }
+  .tv-qr-bar .addr { font-size: 1.8vh; opacity: .85; text-align: left; max-width: 16vw; }
 </style>
 </head>
 <body>
@@ -92,16 +109,16 @@
 </div>
 
 <div class="tv-body">
-  <!-- עמודה שמאל: זמני היום -->
-  <div class="tv-col left">
-    <h2 id="today-title">זמני היום</h2>
+  <!-- עמודה 1: זמני היום -->
+  <div class="tv-col today">
+    <h2>זמני היום</h2>
     <div class="vatikin-box" id="vatikin-box"></div>
     <div class="weekday-title">תפילות ימי חול</div>
     <ul class="tv-list" id="weekday-list-tv"></ul>
   </div>
 
-  <!-- עמודה ימין: לוז השבת -->
-  <div class="tv-col right">
+  <!-- עמודה 2: לוז השבת -->
+  <div class="tv-col shabbat">
     <h2>לוז שבת קודש</h2>
     <div class="shabbat-head">
       <div class="parasha" id="parasha-title">שבת שלום</div>
@@ -112,24 +129,48 @@
     </div>
     <ul class="tv-list" id="shabbat-prayers-list"></ul>
   </div>
+
+  <!-- עמודה 3: שיעורים + הודעות -->
+  <div class="tv-col shiurim">
+    <h2>שיעורי תורה</h2>
+    <ul class="tv-list" id="shiurim-list-tv"></ul>
+    <div class="notices" id="notices"></div>
+  </div>
 </div>
 
-<div class="tv-foot">
-  רח' קטיף 36, נתיבות · הזמנים מחושבים לפי אופק נתיבות · העמוד מתעדכן אוטומטית
+<div class="tv-qr-bar">
+  <div class="qr-items">
+    <div class="qr-item">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fohevisrael.org.il%2Fdonations.html" alt="QR תרומות">
+      <div class="cap">תרומות</div>
+    </div>
+    <div class="qr-item">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fchat.whatsapp.com%2FCOI4WoPmfAD9na5WA1MwUz" alt="QR וואטסאפ">
+      <div class="cap">קבוצת הוואטסאפ</div>
+    </div>
+    <div class="qr-item">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fohevisrael.org.il%2F" alt="QR אתר">
+      <div class="cap">אתר בית הכנסת</div>
+    </div>
+  </div>
+  <div class="addr">בית הכנסת "השמחה שבאופק"<br>רח' קטיף 36, נתיבות</div>
 </div>
 
-<script src="js/netz-data.js?v=20"></script>
-<script src="js/zmanim.js?v=20"></script>
-<script src="js/shabbat-times-config.js?v=20"></script>
+<script src="js/netz-data.js?v=21"></script>
+<script src="js/zmanim.js?v=21"></script>
+<script src="js/shabbat-times-config.js?v=21"></script>
+<script src="js/shiurim-data.js?v=21"></script>
+<script src="js/tv-data.js?v=21"></script>
 <script>
-  // רישום Service Worker (רשת-תחילה) - כדי שרענון מלא ימשוך תמיד את התוכן העדכני
+  // Service Worker (רשת-תחילה) - כדי שרענון ימשוך תמיד תוכן עדכני
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
   }
 
-  // עותק "חי" של הגדרות זמני שבת - מתעדכן ברענון התוכן הקל (בלי טעינת עמוד מלאה),
-  // כדי לחסוך בנתונים (לא מורידים מחדש לוגו/גופנים/קוד כל פעם - רק קובץ קטן).
+  // עותקים "חיים" של נתוני תוכן - מתעדכנים ברענון הקל (בלי טעינת עמוד מלאה, חוסך נתונים)
   let liveShabbatCfg = (typeof SHABBAT_TIMES_CONFIG !== "undefined") ? SHABBAT_TIMES_CONFIG : null;
+  let liveShiurim = (typeof SHIURIM_LIST !== "undefined") ? SHIURIM_LIST : [];
+  let liveTvData = (typeof TV_DATA !== "undefined") ? TV_DATA : { announcement: "", holidayPromo: "" };
 
   const israelClock = new Intl.DateTimeFormat("he-IL", {
     timeZone: NETIVOT.timeZone, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
@@ -138,14 +179,12 @@
   function renderClock() {
     document.getElementById("live-clock").textContent = israelClock.format(new Date());
   }
-
   function renderDates() {
     const now = new Date();
     document.getElementById("greg-date").textContent = formatGregorian(now);
     document.getElementById("heb-date").textContent = formatHebrewDate(now);
   }
 
-  // זמני היום (ותיקין) - בעמודה השמאלית, גדול ובולט
   function renderToday() {
     const now = new Date();
     const { hanetz, tefila } = getShulZmanim(now);
@@ -157,7 +196,7 @@
         <div class="sub">הנץ החמה <span class="hanetz">${formatTime(hanetz)}</span></div>`;
     } else if (isShabbat || isYomTov) {
       box.innerHTML = `<div class="no-vatikin">אין מניין ותיקין<br>(${isYomTov ? yomTovName : "שבת"})</div>
-        <div class="sub" style="margin-top:1.4vh">הנץ החמה <span class="hanetz">${formatTime(hanetz)}</span></div>`;
+        <div class="sub" style="margin-top:1.2vh">הנץ החמה <span class="hanetz">${formatTime(hanetz)}</span></div>`;
     } else {
       box.innerHTML = `<div class="lead">תחילת תפילת ותיקין (הודו)</div>
         <div class="big">${formatTime(tefila)}</div>
@@ -165,7 +204,6 @@
     }
   }
 
-  // לוז השבת (כניסה/יציאה + זמני תפילות) - מאותו מקור כמו דף השבת, דרך העותק החי
   function renderShabbat() {
     const t = calcShabbatTimes(new Date());
     if (!t) return;
@@ -182,7 +220,22 @@
     }
   }
 
-  // תפילות ימי חול - נמשכות מדף השבת (weekday-list) כדי להישאר מסונכרן עם עריכות הניהול
+  function renderShiurim() {
+    document.getElementById("shiurim-list-tv").innerHTML = (liveShiurim || [])
+      .filter((s) => !s.hidden)
+      .map((s) => `<li><span class="lbl">${s.label}</span><span class="tm">${s.time || ""}</span></li>`)
+      .join("");
+  }
+
+  function renderNotices() {
+    const d = liveTvData || {};
+    let html = "";
+    if (d.holidayPromo) html += `<div class="notice-box holiday"><span class="nt">🎉 חג ומועד</span>${d.holidayPromo}</div>`;
+    if (d.announcement) html += `<div class="notice-box admin"><span class="nt">📢 הודעה</span>${d.announcement}</div>`;
+    document.getElementById("notices").innerHTML = html;
+  }
+
+  // תפילות ימי חול - נמשכות מדף השבת. מסירים את שורת "ותיקין" כי היא כבר מוצגת גדול למעלה.
   async function renderWeekday() {
     try {
       const resp = await fetch("shabbat.html?t=" + Date.now(), { cache: "reload" });
@@ -191,46 +244,49 @@
       if (!m) return;
       const tmp = document.createElement("div");
       tmp.innerHTML = m[1];
-      const items = Array.from(tmp.querySelectorAll("li")).map((li) => {
-        const isNote = li.classList.contains("note-line");
-        const lbl = li.querySelector("span")?.textContent || "";
-        const tm = li.querySelector(".time")?.textContent || "";
-        return isNote
-          ? `<li class="note">${lbl}</li>`
-          : `<li><span class="lbl">${lbl}</span><span class="tm">${tm}</span></li>`;
-      });
+      const items = Array.from(tmp.querySelectorAll("li"))
+        .filter((li) => !((li.querySelector("span")?.textContent || "").includes("ותיקין")))
+        .map((li) => {
+          const isNote = li.classList.contains("note-line");
+          const lbl = li.querySelector("span")?.textContent || "";
+          const tm = li.querySelector(".time")?.textContent || "";
+          return isNote
+            ? `<li class="note">${lbl}</li>`
+            : `<li><span class="lbl">${lbl}</span><span class="tm">${tm}</span></li>`;
+        });
       document.getElementById("weekday-list-tv").innerHTML = items.join("");
     } catch (e) { /* נשאר ריק אם אין רשת */ }
   }
 
-  // רענון תוכן "קל" (חוסך נתונים): מושך רק את קובץ ההגדרות הקטן ואת לוז ימי החול +
-  // שם הפרשה - בלי לטעון מחדש את כל העמוד (לוגו/גופנים/קוד). רץ כל 30 דק'.
+  // רענון תוכן "קל" (חוסך נתונים): מושך רק קבצי נתונים קטנים + לוז ימי חול + פרשה.
   async function refreshContent() {
-    try {
-      const r = await fetch("js/shabbat-times-config.js?t=" + Date.now(), { cache: "reload" });
-      const txt = await r.text();
-      const m = txt.match(/SHABBAT_TIMES_CONFIG\s*=\s*(\{[\s\S]*?\n\});/);
-      if (m) liveShabbatCfg = Function(`"use strict"; return (${m[1]});`)();
-    } catch (e) { /* שומרים על ההגדרות הקיימות */ }
+    const grab = async (url, re) => {
+      try {
+        const r = await fetch(url + "?t=" + Date.now(), { cache: "reload" });
+        const m = (await r.text()).match(re);
+        return m ? Function(`"use strict"; return (${m[1]});`)() : null;
+      } catch (e) { return null; }
+    };
+    const cfg = await grab("js/shabbat-times-config.js", /SHABBAT_TIMES_CONFIG\s*=\s*(\{[\s\S]*?\n\});/);
+    if (cfg) liveShabbatCfg = cfg;
+    const sh = await grab("js/shiurim-data.js", /SHIURIM_LIST\s*=\s*(\[[\s\S]*?\]);/);
+    if (sh) liveShiurim = sh;
+    const tv = await grab("js/tv-data.js", /TV_DATA\s*=\s*(\{[\s\S]*?\n\});/);
+    if (tv) liveTvData = tv;
     await renderWeekday();
     if (typeof renderParashaName === "function") renderParashaName();
-    renderShabbat();
+    renderShabbat(); renderShiurim(); renderNotices();
   }
 
-  function renderLive() {
-    renderDates();
-    renderToday();
-    renderShabbat();
-  }
+  function renderLive() { renderDates(); renderToday(); renderShabbat(); }
 
-  renderClock();
-  renderLive();
-  refreshContent(); // משיכת תוכן ראשונית (פרשה, ימי חול, הגדרות)
+  renderClock(); renderLive(); renderShiurim(); renderNotices();
+  refreshContent();
 
   setInterval(renderClock, 1000);                      // שעון חי - בלי רשת
   setInterval(renderLive, 60 * 1000);                  // חישוב מחדש כל דקה (מעבר יום/שבת) - בלי רשת
-  setInterval(refreshContent, 30 * 60 * 1000);         // רענון תוכן קל כל 30 דק' (~16KB)
-  setInterval(() => location.reload(), 24 * 60 * 60 * 1000); // רענון מלא פעם ביום (עדכוני קוד)
+  setInterval(refreshContent, 30 * 60 * 1000);         // רענון תוכן קל כל 30 דק'
+  setInterval(() => location.reload(), 24 * 60 * 60 * 1000); // רענון מלא פעם ביום
 </script>
 </body>
 </html>

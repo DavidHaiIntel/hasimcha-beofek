@@ -486,6 +486,38 @@ ${rowsJs}
 `;
 }
 
+// ===== נתוני דף התצוגה בטלוויזיה (js/tv-data.js) - הודעה ניהולית + פרסום חג =====
+async function fetchLiveTvDataJs() {
+  const resp = await fetch(
+    `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/js/tv-data.js?t=${Date.now()}`
+  );
+  if (!resp.ok) throw new Error("לא הצלחתי לטעון את נתוני התצוגה מ-GitHub");
+  return resp.text();
+}
+
+function parseTvDataJs(jsText) {
+  const match = jsText.match(/TV_DATA\s*=\s*(\{[\s\S]*?\n\});/);
+  if (!match) return { announcement: "", holidayPromo: "" };
+  try {
+    // eslint-disable-next-line no-new-func
+    return Function(`"use strict"; return (${match[1]});`)();
+  } catch (e) {
+    return { announcement: "", holidayPromo: "" };
+  }
+}
+
+function buildTvDataJs(announcement, holidayPromo) {
+  const esc = (s) => s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
+  return `/* ===== נתונים לדף התצוגה בטלוויזיה (tv.html) - נערך מעמוד הניהול (admin.html) =====
+   announcement = הודעה ניהולית כללית (ריק = לא מוצג).
+   holidayPromo = פרסום/ברכת חג (ריק = לא מוצג). מוצג בולט יותר מהודעה רגילה. */
+const TV_DATA = {
+  announcement: "${esc(announcement)}",
+  holidayPromo: "${esc(holidayPromo)}",
+};
+`;
+}
+
 function parseExtraPagesFromJs(jsText) {
   const match = jsText.match(/extraPages:\s*(\[[\s\S]*?\])\s*,?\s*\};/);
   if (!match) return [];
@@ -825,6 +857,11 @@ async function loadIntoForm() {
   document.getElementById("st-shacharit-rows").innerHTML = "";
   stData.shacharitRows.forEach((r) => addRow("st-shacharit-rows", r.label, r.time, r.hidden));
 
+  const tvJs = await fetchLiveTvDataJs();
+  const tvData = parseTvDataJs(tvJs);
+  document.getElementById("tv-announcement").value = tvData.announcement || "";
+  document.getElementById("tv-holiday-promo").value = tvData.holidayPromo || "";
+
   const configJs = await fetchLiveSiteConfigJs();
   const extraPages = parseExtraPagesFromJs(configJs);
   renderExtraPagesForm(extraPages);
@@ -933,6 +970,16 @@ async function saveToGithub() {
         getRows("st-shacharit-rows")
       ),
       `עדכון שינויי שחרית שמחת תורה`,
+      token
+    );
+
+    await saveFileToGithub(
+      "js/tv-data.js",
+      () => buildTvDataJs(
+        document.getElementById("tv-announcement").value.trim(),
+        document.getElementById("tv-holiday-promo").value.trim()
+      ),
+      `עדכון הודעות לדף התצוגה`,
       token
     );
 

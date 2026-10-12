@@ -66,7 +66,7 @@
   .shabbat-head { text-align: center; margin-bottom: 1.1vh; }
   .shabbat-head .parasha { font-size: 3vh; font-weight: 800; color: var(--navy); }
   .candles { display: flex; justify-content: center; gap: 1.4vw; margin-top: .9vh; }
-  .candles .c { background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: .8vh 1.3vw; min-width: 9vw; }
+  .candles .c { background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: .8vh 1.3vw; min-width: 9vw; box-shadow: 0 3px 12px rgba(26,42,68,.08); }
   .candles .c .k { font-size: 1.8vh; color: var(--soft); font-weight: 600; }
   .candles .c .v { font-size: 3.8vh; font-weight: 900; color: var(--ink); direction: ltr; line-height: 1.1; }
   .candles .c.in { border-color: var(--gold); }
@@ -82,15 +82,18 @@
   .notice-box .nt { display: block; font-size: 1.7vh; font-weight: 800; opacity: .8; margin-bottom: .4vh; }
   /* ===== פס QR תחתון ===== */
   .tv-qr-bar {
-    display: flex; align-items: center; gap: 2vw;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1vw;
     padding: 1.2vh 2.2vw; background: linear-gradient(90deg, var(--navy-soft), var(--navy));
     color: #fff;
   }
-  .qr-items { display: flex; gap: 2.4vw; flex: 1; justify-content: center; }
+  .tv-qr-bar .auto-note { grid-column: 1; font-size: 1.8vh; opacity: .9; display: flex; align-items: center; gap: .7vw; font-weight: 500; }
+  .tv-qr-bar .auto-note .dot { width: 1.2vh; height: 1.2vh; border-radius: 50%; background: #45d672; box-shadow: 0 0 10px #45d672; animation: pulse 2s infinite; flex: none; }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
+  .qr-items { grid-column: 2; display: flex; gap: 2.4vw; justify-content: center; }
   .qr-item { text-align: center; }
   .qr-item img { height: 15vh; width: 15vh; background: #fff; border-radius: 10px; padding: .5vh; display: block; }
   .qr-item .cap { font-size: 2vh; font-weight: 700; margin-top: .5vh; }
-  .tv-qr-bar .addr { font-size: 1.8vh; opacity: .85; text-align: left; max-width: 16vw; }
+  .tv-qr-bar .addr { grid-column: 3; font-size: 1.8vh; opacity: .85; text-align: left; }
 </style>
 </head>
 <body>
@@ -111,7 +114,7 @@
 <div class="tv-body">
   <!-- עמודה 1: זמני היום -->
   <div class="tv-col today">
-    <h2>זמני היום</h2>
+    <h2>🌅 זמני היום</h2>
     <div class="vatikin-box" id="vatikin-box"></div>
     <div class="weekday-title">תפילות ימי חול</div>
     <ul class="tv-list" id="weekday-list-tv"></ul>
@@ -119,7 +122,7 @@
 
   <!-- עמודה 2: לוז השבת -->
   <div class="tv-col shabbat">
-    <h2>לוז שבת קודש</h2>
+    <h2>🕯️ לוז שבת קודש</h2>
     <div class="shabbat-head">
       <div class="parasha" id="parasha-title">שבת שלום</div>
       <div class="candles">
@@ -132,13 +135,14 @@
 
   <!-- עמודה 3: שיעורים + הודעות -->
   <div class="tv-col shiurim">
-    <h2>שיעורי תורה</h2>
+    <h2>📖 שיעורי תורה</h2>
     <ul class="tv-list" id="shiurim-list-tv"></ul>
     <div class="notices" id="notices"></div>
   </div>
 </div>
 
 <div class="tv-qr-bar">
+  <div class="auto-note"><span class="dot"></span>הלוח מתעדכן אוטומטית</div>
   <div class="qr-items">
     <div class="qr-item">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fohevisrael.org.il%2Fdonations.html" alt="QR תרומות">

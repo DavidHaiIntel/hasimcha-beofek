@@ -39,10 +39,23 @@ document.addEventListener("DOMContentLoaded", () => {
   // רשימת שיעורי התורה (js/shiurim-data.js) - מוצגת בכל אלמנט עם class="js-shiurim-list" בעמוד
   // (כרגע: דף הבית ודף השבת) - עריכה בניהול משתקפת בשניהם יחד, כי המקור הוא קובץ אחד משותף
   if (typeof SHIURIM_LIST !== "undefined") {
+    // פיצול התווית לשם השיעור (עם קבוצת גיל בסוגריים) ולשורת המעביר שאחרי הפסיק
+    const splitShiur = (label) => {
+      const groupMatch = label.match(/\s*(\([^)]*\))\s*$/);
+      const group = groupMatch ? " " + groupMatch[1] : "";
+      const base = groupMatch ? label.slice(0, groupMatch.index).trim() : label;
+      const ci = base.lastIndexOf(",");
+      if (ci === -1) return { title: base + group, teacher: "" };
+      return { title: base.slice(0, ci).trim() + group, teacher: base.slice(ci + 1).trim() };
+    };
     document.querySelectorAll(".js-shiurim-list").forEach((ul) => {
       ul.innerHTML = SHIURIM_LIST
         .filter((s) => !s.hidden)
-        .map((s) => `<li><span>${s.label}</span><span class="time">${s.time}</span></li>`)
+        .map((s) => {
+          const { title, teacher } = splitShiur(s.label);
+          const teacherHtml = teacher ? `<span class="teacher">${teacher}</span>` : "";
+          return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="time">${s.time}</span></li>`;
+        })
         .join("");
     });
   }

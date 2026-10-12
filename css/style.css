@@ -426,10 +426,17 @@ table.zman-table td.time { direction: ltr; unicode-bidi: isolate; font-variant-n
 .shabbat-list li {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 8px 0;
   border-bottom: 1px dashed #e6edf1;
 }
 .shabbat-list li:last-child { border-bottom: none; }
+.shabbat-list li .shiur-text { display: flex; flex-direction: column; gap: 2px; }
+.shabbat-list li .shiur-text .teacher {
+  font-size: 0.82rem;
+  color: var(--color-text-soft);
+  font-weight: 500;
+}
 .shabbat-list li .time {
   direction: ltr;
   unicode-bidi: isolate;

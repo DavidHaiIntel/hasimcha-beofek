@@ -60,6 +60,8 @@
   }
   .tv-list li:last-child { border-bottom: none; }
   .tv-list li .lbl { font-weight: 600; }
+  .tv-list li .shiur-text { display: flex; flex-direction: column; gap: .3vh; }
+  .tv-list li .teacher { font-weight: 500; font-size: 2vh; color: var(--soft); }
   .tv-list li .tm { font-weight: 800; color: var(--navy); direction: ltr; font-size: 2.7vh; white-space: nowrap; }
   .tv-list li .shiur-end { display: inline-flex; align-items: center; gap: .7vw; }
   .tv-list li .shiur-qr { height: 6vh; width: 6vh; border-radius: 4px; background: #fff; display: block; flex: none; }
@@ -162,11 +164,11 @@
   <div class="addr">בית הכנסת "השמחה שבאופק"<br>רח' קטיף 36, נתיבות</div>
 </div>
 
-<script src="js/netz-data.js?v=23"></script>
-<script src="js/zmanim.js?v=23"></script>
-<script src="js/shabbat-times-config.js?v=23"></script>
-<script src="js/shiurim-data.js?v=23"></script>
-<script src="js/tv-data.js?v=23"></script>
+<script src="js/netz-data.js?v=24"></script>
+<script src="js/zmanim.js?v=24"></script>
+<script src="js/shabbat-times-config.js?v=24"></script>
+<script src="js/shiurim-data.js?v=24"></script>
+<script src="js/tv-data.js?v=24"></script>
 <script>
   // Service Worker (רשת-תחילה) - כדי שרענון ימשוך תמיד תוכן עדכני
   if ("serviceWorker" in navigator) {
@@ -233,7 +235,20 @@
         const qr = s.link
           ? `<img class="shiur-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(s.link)}" alt="QR">`
           : "";
-        return `<li><span class="lbl">${s.label}</span><span class="shiur-end"><span class="tm">${s.time || ""}</span>${qr}</span></li>`;
+        // פיצול התווית לשם השיעור (עם קבוצת גיל בסוגריים) ומתחתיו שם המעביר, אם צוין אחרי פסיק.
+        let title = s.label, teacher = "";
+        const groupMatch = s.label.match(/\s*(\([^)]*\))\s*$/);
+        const group = groupMatch ? " " + groupMatch[1] : "";
+        const base = groupMatch ? s.label.slice(0, groupMatch.index).trim() : s.label;
+        const ci = base.lastIndexOf(",");
+        if (ci !== -1) {
+          title = base.slice(0, ci).trim() + group;
+          teacher = base.slice(ci + 1).trim();
+        } else {
+          title = base + group;
+        }
+        const teacherHtml = teacher ? `<span class="teacher">${teacher}</span>` : "";
+        return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="shiur-end"><span class="tm">${s.time || ""}</span>${qr}</span></li>`;
       })
       .join("");
   }

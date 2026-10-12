@@ -16,12 +16,13 @@ function b64DecodeUnicode(str) {
   return decodeURIComponent(escape(atob(str)));
 }
 
-function addRow(containerId, label = "", time = "", hidden = false, key = "") {
+function addRow(containerId, label = "", time = "", hidden = false, key = "", link = "") {
   const container = document.getElementById(containerId);
   const row = document.createElement("div");
   row.className = "admin-row";
   row.dataset.hidden = hidden ? "true" : "false";
   row.dataset.key = key;
+  row.dataset.link = link; // קישור וואטסאפ (לשיעורים) - נשמר כדי לא להימחק בעריכות ניהול
   row.innerHTML = `
     <button type="button" class="move-row-btn move-up-btn" title="הזז למעלה">↑</button>
     <button type="button" class="move-row-btn move-down-btn" title="הזז למטה">↓</button>
@@ -56,6 +57,7 @@ function getRows(containerId) {
     time: row.querySelector(".row-time").value.trim(),
     hidden: row.dataset.hidden === "true",
     key: row.dataset.key || "",
+    link: row.dataset.link || "",
   })).filter((r) => r.label || r.time);
 }
 
@@ -253,7 +255,10 @@ function parseShiurimFromJs(jsText) {
 
 function buildShiurimDataJs(rows) {
   const list = rows
-    .map((r) => `  { label: "${r.label.replace(/"/g, '\\"')}", time: "${r.time}", hidden: ${r.hidden} },`)
+    .map((r) => {
+      const linkPart = r.link ? `, link: "${r.link.replace(/"/g, '\\"')}"` : "";
+      return `  { label: "${r.label.replace(/"/g, '\\"')}", time: "${r.time}", hidden: ${r.hidden}${linkPart} },`;
+    })
     .join("\n");
   return `/* ===== שיעורי תורה במהלך השבוע - נערכים מעמוד הניהול (admin.html) =====
    הרשימה הזו מוצגת גם בדף השבת וגם בדף הבית (בכל אלמנט עם class="js-shiurim-list") -
@@ -823,7 +828,7 @@ async function loadIntoForm() {
 
   const shiurimJs = await fetchLiveShiurimDataJs();
   document.getElementById("shiurim-rows").innerHTML = "";
-  parseShiurimFromJs(shiurimJs).forEach((r) => addRow("shiurim-rows", r.label, r.time, r.hidden));
+  parseShiurimFromJs(shiurimJs).forEach((r) => addRow("shiurim-rows", r.label, r.time, r.hidden, "", r.link || ""));
 
   const rhJs = await fetchLiveRoshHashanaDataJs();
   const rhData = parseRoshHashanaFromJs(rhJs);

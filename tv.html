@@ -165,11 +165,11 @@
   <div class="addr">בית הכנסת "השמחה שבאופק"<br>רח' קטיף 36, נתיבות</div>
 </div>
 
-<script src="js/netz-data.js?v=28"></script>
-<script src="js/zmanim.js?v=28"></script>
-<script src="js/shabbat-times-config.js?v=28"></script>
-<script src="js/shiurim-data.js?v=28"></script>
-<script src="js/tv-data.js?v=28"></script>
+<script src="js/netz-data.js?v=29"></script>
+<script src="js/zmanim.js?v=29"></script>
+<script src="js/shabbat-times-config.js?v=29"></script>
+<script src="js/shiurim-data.js?v=29"></script>
+<script src="js/tv-data.js?v=29"></script>
 <script>
   // Service Worker (רשת-תחילה) - כדי שרענון ימשוך תמיד תוכן עדכני
   if ("serviceWorker" in navigator) {
@@ -307,11 +307,23 @@
 
   function renderLive() { renderDates(); renderToday(); renderShabbat(); }
 
-  // מחליף את חיווי העדכון האוטומטי בחיווי "לא מחובר" כשאין אינטרנט
-  function updateOnlineStatus() {
+  // מחליף את חיווי העדכון האוטומטי בחיווי "לא מחובר" כשאין אינטרנט.
+  // navigator.onLine לא אמין במחשב (נשאר true גם כש-WiFi כבוי), לכן בודקים בפועל ע"י טעינת תמונה קטנה.
+  function probeInternet() {
+    return new Promise((resolve) => {
+      if (!navigator.onLine) return resolve(false);
+      const img = new Image();
+      const done = (ok) => { img.onload = img.onerror = null; clearTimeout(timer); resolve(ok); };
+      const timer = setTimeout(() => done(false), 5000);
+      img.onload = () => done(true);
+      img.onerror = () => done(false);
+      img.src = "https://api.qrserver.com/v1/create-qr-code/?size=1x1&data=ping&_=" + Date.now();
+    });
+  }
+  async function updateOnlineStatus() {
     const note = document.getElementById("auto-note");
     if (!note) return;
-    const online = navigator.onLine;
+    const online = await probeInternet();
     note.classList.toggle("offline", !online);
     note.querySelector(".auto-text").textContent = online ? "הלוח מתעדכן אוטומטית" : "לא מחובר לאינטרנט (מצב לא מקוון)";
   }
@@ -324,7 +336,7 @@
 
   setInterval(renderClock, 1000);                      // שעון חי - בלי רשת
   setInterval(renderLive, 60 * 1000);                  // חישוב מחדש כל דקה (מעבר יום/שבת) - בלי רשת
-  setInterval(updateOnlineStatus, 15 * 1000);          // בדיקת חיבור לאינטרנט
+  setInterval(updateOnlineStatus, 10 * 1000);          // בדיקת חיבור לאינטרנט בפועל
   setInterval(refreshContent, 30 * 60 * 1000);         // רענון תוכן קל כל 30 דק'
   setInterval(() => location.reload(), 24 * 60 * 60 * 1000); // רענון מלא פעם ביום
 </script>

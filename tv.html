@@ -92,6 +92,7 @@
   }
   .tv-qr-bar .auto-note { grid-column: 1; font-size: 1.8vh; opacity: .9; display: flex; align-items: center; gap: .7vw; font-weight: 500; }
   .tv-qr-bar .auto-note .dot { width: 1.2vh; height: 1.2vh; border-radius: 50%; background: #45d672; box-shadow: 0 0 10px #45d672; animation: pulse 2s infinite; flex: none; }
+  .tv-qr-bar .auto-note.offline .dot { background: #e0564b; box-shadow: 0 0 10px #e0564b; animation: none; }
   @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
   .qr-items { grid-column: 2; display: flex; gap: 2.4vw; justify-content: center; }
   .qr-item { text-align: center; }
@@ -146,7 +147,7 @@
 </div>
 
 <div class="tv-qr-bar">
-  <div class="auto-note"><span class="dot"></span>הלוח מתעדכן אוטומטית</div>
+  <div class="auto-note" id="auto-note"><span class="dot"></span><span class="auto-text">הלוח מתעדכן אוטומטית</span></div>
   <div class="qr-items">
     <div class="qr-item">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fohevisrael.org.il%2Fdonations.html" alt="QR תרומות">
@@ -164,11 +165,11 @@
   <div class="addr">בית הכנסת "השמחה שבאופק"<br>רח' קטיף 36, נתיבות</div>
 </div>
 
-<script src="js/netz-data.js?v=27"></script>
-<script src="js/zmanim.js?v=27"></script>
-<script src="js/shabbat-times-config.js?v=27"></script>
-<script src="js/shiurim-data.js?v=27"></script>
-<script src="js/tv-data.js?v=27"></script>
+<script src="js/netz-data.js?v=28"></script>
+<script src="js/zmanim.js?v=28"></script>
+<script src="js/shabbat-times-config.js?v=28"></script>
+<script src="js/shiurim-data.js?v=28"></script>
+<script src="js/tv-data.js?v=28"></script>
 <script>
   // Service Worker (רשת-תחילה) - כדי שרענון ימשוך תמיד תוכן עדכני
   if ("serviceWorker" in navigator) {
@@ -235,10 +236,10 @@
         const qr = s.link
           ? `<img class="shiur-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(s.link)}" alt="QR">`
           : "";
-        // פיצול התווית לשם השיעור (עם קבוצת גיל בסוגריים) ומתחתיו שם המעביר, אם צוין אחרי פסיק.
+        // פיצול התווית לשם השיעור (עם קבוצת גיל כסיומת אחרי מקף) ומתחתיו שם המעביר, אם צוין אחרי פסיק.
         let title = s.label, teacher = "";
-        const groupMatch = s.label.match(/\s*(\([^)]*\))\s*$/);
-        const group = groupMatch ? " " + groupMatch[1] : "";
+        const groupMatch = s.label.match(/\s*\(([^)]*)\)\s*$/);
+        const group = groupMatch ? " - " + groupMatch[1].trim() : "";
         const base = groupMatch ? s.label.slice(0, groupMatch.index).trim() : s.label;
         const ci = base.lastIndexOf(",");
         if (ci !== -1) {
@@ -306,11 +307,24 @@
 
   function renderLive() { renderDates(); renderToday(); renderShabbat(); }
 
+  // מחליף את חיווי העדכון האוטומטי בחיווי "לא מחובר" כשאין אינטרנט
+  function updateOnlineStatus() {
+    const note = document.getElementById("auto-note");
+    if (!note) return;
+    const online = navigator.onLine;
+    note.classList.toggle("offline", !online);
+    note.querySelector(".auto-text").textContent = online ? "הלוח מתעדכן אוטומטית" : "לא מחובר לאינטרנט (מצב לא מקוון)";
+  }
+  window.addEventListener("online", updateOnlineStatus);
+  window.addEventListener("offline", updateOnlineStatus);
+
   renderClock(); renderLive(); renderShiurim(); renderNotices();
   refreshContent();
+  updateOnlineStatus();
 
   setInterval(renderClock, 1000);                      // שעון חי - בלי רשת
   setInterval(renderLive, 60 * 1000);                  // חישוב מחדש כל דקה (מעבר יום/שבת) - בלי רשת
+  setInterval(updateOnlineStatus, 15 * 1000);          // בדיקת חיבור לאינטרנט
   setInterval(refreshContent, 30 * 60 * 1000);         // רענון תוכן קל כל 30 דק'
   setInterval(() => location.reload(), 24 * 60 * 60 * 1000); // רענון מלא פעם ביום
 </script>

@@ -41,8 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof SHIURIM_LIST !== "undefined") {
     // פיצול התווית לשם השיעור (עם קבוצת גיל בסוגריים) ולשורת המעביר שאחרי הפסיק
     const splitShiur = (label) => {
-      const groupMatch = label.match(/\s*(\([^)]*\))\s*$/);
-      const group = groupMatch ? " " + groupMatch[1] : "";
+      const groupMatch = label.match(/\s*\(([^)]*)\)\s*$/);
+      const group = groupMatch ? " - " + groupMatch[1].trim() : "";
       const base = groupMatch ? label.slice(0, groupMatch.index).trim() : label;
       const ci = base.lastIndexOf(",");
       if (ci === -1) return { title: base + group, teacher: "" };

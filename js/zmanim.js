@@ -525,10 +525,10 @@ function calcShabbatTimes(reference = new Date()) {
   );
   if (!fridaySun.sunset || !saturdaySun.tzeit) return null;
 
-  // כניסת שבת כוילה מול אתר ישיבה (yeshiva.org.il): 29.5 דק' לפני שקיעה (מדויק ב-2 בדיקות אמת)
+  // כניסת שבת: 20 דק' לפני השקיעה (לבקשת הקהילה - 10 דק' מאוחר יותר מ-29.5 הקודמות)
   // יציאת שבת = צאת הכוכבים לפי זנית TZEIT_ZENITH (ראו הערה למעלה) - לא הסטה קבועה בדקות,
   // כי מספר הדקות אחרי השקיעה משתנה בין עונות (36 בחורף, 40 בקיץ) בעוד שהזנית קבועה כל השנה
-  const candleLighting = new Date(fridaySun.sunset.getTime() - 29.5 * 60000);
+  const candleLighting = new Date(fridaySun.sunset.getTime() - 20 * 60000);
   const shabbatEnds = saturdaySun.tzeit;
   const minchaErev = roundDownToMinutes(
     new Date(fridaySun.sunset.getTime() - 18 * 60000), 5

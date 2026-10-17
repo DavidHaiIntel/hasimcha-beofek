@@ -663,7 +663,10 @@ async function renderParashaName() {
   try {
     const { saturday } = getShabbatDates(new Date());
     const saturdayStr = israelGregorianFormatter.format(saturday);
-    const url = `https://www.hebcal.com/shabbat?cfg=json&latitude=${NETIVOT.lat}&longitude=${NETIVOT.lon}&tzid=${encodeURIComponent(NETIVOT.timeZone)}&M=on`;
+    // מעבירים ל-Hebcal את תאריך השבת שאנו מציגים (gy/gm/gd) - אחרת בלי תאריך הוא מחזיר את
+    // פרשת השבוע הנוכחי עד יום ראשון, בעוד שהלוז שלנו כבר התגלגל לשבוע הבא שעה אחרי צאת שבת.
+    const [sy, sm, sd] = saturdayStr.split("-");
+    const url = `https://www.hebcal.com/shabbat?cfg=json&latitude=${NETIVOT.lat}&longitude=${NETIVOT.lon}&tzid=${encodeURIComponent(NETIVOT.timeZone)}&M=on&gy=${sy}&gm=${sm}&gd=${sd}`;
     const resp = await fetch(url);
     const data = await resp.json();
     const parashaItem = (data.items || []).find((i) => i.category === "parashat");

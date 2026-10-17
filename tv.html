@@ -338,7 +338,7 @@
   setInterval(renderLive, 60 * 1000);                  // חישוב מחדש כל דקה (מעבר יום/שבת) - בלי רשת
   setInterval(updateOnlineStatus, 60 * 1000);          // בדיקת חיבור לאינטרנט בפועל
   setInterval(refreshContent, 30 * 60 * 1000);         // רענון תוכן קל כל 30 דק'
-  setInterval(() => location.reload(), 24 * 60 * 60 * 1000); // רענון מלא פעם ביום
+  setInterval(() => location.reload(), 2 * 60 * 60 * 1000);  // רענון מלא כל שעתיים
 </script>
 </body>
 </html>

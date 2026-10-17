@@ -9,7 +9,7 @@
 
    עדכון ה-Service Worker עצמו: skipWaiting + clients.claim מחילים גרסה חדשה מיד,
    בלי צורך לסגור את כל הכרטיסיות. */
-const CACHE = "ohev-cache-v1";
+const CACHE = "ohev-cache-v2";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
@@ -34,15 +34,24 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith(
     (async () => {
+      const cache = await caches.open(CACHE);
+      // תמונות (לוגו וכו') לא משתנות - מגישים מהמטמון תחילה כדי לא להוריד אותן שוב ושוב בכל טעינה.
+      // אם צריך להחליף תמונה בעתיד - לעדכן את שם ה-CACHE (למשל v3) וההורדה תתבצע מחדש פעם אחת.
+      if (req.destination === "image") {
+        const cachedImg = await cache.match(req);
+        if (cachedImg) return cachedImg;
+        const freshImg = await fetch(req);
+        cache.put(req, freshImg.clone());
+        return freshImg;
+      }
       try {
         // רשת-תחילה: מושכים תמיד טרי מהשרת, תוך עקיפת מטמון ה-HTTP (reload)
         const fresh = await fetch(req, { cache: "reload" });
-        const cache = await caches.open(CACHE);
         cache.put(req, fresh.clone());
         return fresh;
       } catch (err) {
         // אין רשת - נופלים לגיבוי מהמטמון המקומי כדי שהאתר עדיין ייפתח
-        const cached = await caches.match(req);
+        const cached = await cache.match(req);
         if (cached) return cached;
         throw err;
       }

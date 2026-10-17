@@ -498,7 +498,16 @@ function getShabbatDates(reference) {
   // אותו תאריך לוחי - כך getDay/getDate עובדים נכון בלי תלות באזור הזמן של המכשיר.
   const [y, mo, dd] = israelGregorianFormatter.format(new Date(reference)).split("-").map(Number);
   const d = new Date(y, mo - 1, dd, 12, 0, 0);
-  const dow = d.getDay(); // 0=ראשון ... 5=שישי, 6=שבת
+  let dow = d.getDay(); // 0=ראשון ... 5=שישי, 6=שבת
+  // במוצאי שבת, כשעה אחרי צאת השבת - כבר עוברים ללוז של השבת הבאה (כאילו כבר יום ראשון)
+  if (dow === 6) {
+    const satSun = calcSunTimes(y, mo, dd, NETIVOT.lat, NETIVOT.lon);
+    const rollover = satSun.tzeit ? satSun.tzeit.getTime() + 60 * 60000 : null;
+    if (rollover && new Date(reference).getTime() >= rollover) {
+      d.setDate(d.getDate() + 1); // קפיצה ליום ראשון
+      dow = d.getDay();
+    }
+  }
   let friday;
   if (dow === 6) {
     friday = new Date(d);
@@ -511,6 +520,20 @@ function getShabbatDates(reference) {
   const saturday = new Date(friday);
   saturday.setDate(friday.getDate() + 1);
   return { friday, saturday };
+}
+
+// מחזיר את התאריך שישמש ל"זמני היום" בתצוגה: היום ההלכתי מתחיל בצאת הכוכבים, ולכן אחרי
+// צאת הכוכבים כבר מציגים את זמני המחר (הנץ/ותיקין של היום הבא) - לא ממתינים לחצות.
+function getHalachicToday(reference = new Date()) {
+  const [y, mo, dd] = israelGregorianFormatter.format(new Date(reference)).split("-").map(Number);
+  const today = new Date(y, mo - 1, dd, 12, 0, 0);
+  const sun = calcSunTimes(y, mo, dd, NETIVOT.lat, NETIVOT.lon);
+  if (sun.tzeit && new Date(reference).getTime() >= sun.tzeit.getTime()) {
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    return tomorrow;
+  }
+  return today;
 }
 
 function calcShabbatTimes(reference = new Date()) {

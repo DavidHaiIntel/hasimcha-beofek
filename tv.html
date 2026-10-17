@@ -51,6 +51,12 @@
   .vatikin-box .sub { font-size: 2.1vh; color: var(--ink); margin-top: .5vh; }
   .vatikin-box .sub .hanetz { color: var(--gold); font-weight: 800; direction: ltr; display: inline-block; }
   .vatikin-box .no-vatikin { font-size: 4vh; font-weight: 800; color: var(--navy-soft); }
+  /* ---- הנץ לשבוע הקרוב (מוצג בשבת בלבד, בפונט קטן יותר) ---- */
+  .vatikin-box .week-netz { margin: 1.4vh auto 0; max-width: 78%; border-top: 1.5px dashed var(--line); padding-top: 1vh; }
+  .vatikin-box .week-netz .wk-title { font-size: 1.8vh; font-weight: 700; color: var(--soft); margin-bottom: .6vh; }
+  .vatikin-box .week-netz .wk-row { display: flex; justify-content: space-between; font-size: 1.9vh; padding: .3vh .4vw; }
+  .vatikin-box .week-netz .wk-row:nth-child(even) { background: rgba(26,42,68,.04); border-radius: 6px; }
+  .vatikin-box .week-netz .wk-row .hanetz { font-weight: 800; color: var(--gold); direction: ltr; }
   .weekday-title { font-size: 2.2vh; font-weight: 700; color: var(--navy-soft); margin: 1vh 0 .4vh; text-align: center; }
   /* ---- רשימות ---- */
   .tv-list { list-style: none; margin: 0; padding: 0; }
@@ -165,11 +171,11 @@
   <div class="addr">בית הכנסת "השמחה שבאופק"<br>רח' קטיף 36, נתיבות</div>
 </div>
 
-<script src="js/netz-data.js?v=31"></script>
-<script src="js/zmanim.js?v=31"></script>
-<script src="js/shabbat-times-config.js?v=31"></script>
-<script src="js/shiurim-data.js?v=31"></script>
-<script src="js/tv-data.js?v=31"></script>
+<script src="js/netz-data.js?v=32"></script>
+<script src="js/zmanim.js?v=32"></script>
+<script src="js/shabbat-times-config.js?v=32"></script>
+<script src="js/shiurim-data.js?v=32"></script>
+<script src="js/tv-data.js?v=32"></script>
 <script>
   // Service Worker (רשת-תחילה) - כדי שרענון ימשוך תמיד תוכן עדכני
   if ("serviceWorker" in navigator) {
@@ -196,8 +202,9 @@
 
   function renderToday() {
     const now = new Date();
-    const { hanetz, tefila } = getShulZmanim(now);
-    const { isShabbat, isYomTov, yomTovName, fixedTefilaTime, fixedTefilaName } = getDayStatus(now);
+    const ref = getHalachicToday(now); // אחרי צאת הכוכבים כבר מציגים את זמני המחר
+    const { hanetz, tefila } = getShulZmanim(ref);
+    const { isShabbat, isYomTov, yomTovName, fixedTefilaTime, fixedTefilaName } = getDayStatus(ref);
     const box = document.getElementById("vatikin-box");
     if (fixedTefilaTime) {
       box.innerHTML = `<div class="lead">תחילת התפילה (${fixedTefilaName})</div>
@@ -205,12 +212,26 @@
         <div class="sub">הנץ החמה <span class="hanetz">${formatTime(hanetz)}</span></div>`;
     } else if (isShabbat || isYomTov) {
       box.innerHTML = `<div class="no-vatikin">אין מניין ותיקין<br>(${isYomTov ? yomTovName : "שבת"})</div>
-        <div class="sub" style="margin-top:1.2vh">הנץ החמה <span class="hanetz">${formatTime(hanetz)}</span></div>`;
+        <div class="sub" style="margin-top:1.2vh">הנץ החמה <span class="hanetz">${formatTime(hanetz)}</span></div>
+        ${isShabbat ? weekNetzHtml(ref) : ""}`;
     } else {
       box.innerHTML = `<div class="lead">תחילת תפילת ותיקין (הודו)</div>
         <div class="big">${formatTime(tefila)}</div>
         <div class="sub">הנץ החמה <span class="hanetz">${formatTime(hanetz)}</span></div>`;
     }
+  }
+
+  // בשבת: רשימת הנץ החמה לכל יום בשבוע הקרוב (ראשון-שישי), כדי שהמתפללים יידעו את הזמנים
+  function weekNetzHtml(shabbatDate) {
+    const days = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי"];
+    let rows = "";
+    for (let i = 1; i <= 6; i++) {
+      const d = new Date(shabbatDate);
+      d.setDate(shabbatDate.getDate() + i);
+      const { hanetz } = getShulZmanim(d);
+      rows += `<div class="wk-row"><span>${days[i - 1]}</span><span class="hanetz">${formatTime(hanetz)}</span></div>`;
+    }
+    return `<div class="week-netz"><div class="wk-title">הנץ החמה בשבוע הקרוב</div>${rows}</div>`;
   }
 
   function renderShabbat() {

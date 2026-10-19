@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // רשימת שיעורי התורה (js/shiurim-data.js) - מוצגת בכל אלמנט עם class="js-shiurim-list" בעמוד
   // (כרגע: דף הבית ודף השבת) - עריכה בניהול משתקפת בשניהם יחד, כי המקור הוא קובץ אחד משותף
+  const pad4 = (s) => { const m = typeof s === "string" && s.match(/^(\d{1,2}):(\d{2})$/); return m ? m[1].padStart(2, "0") + ":" + m[2] : s; };
   if (typeof SHIURIM_LIST !== "undefined") {
     // פיצול התווית לשם השיעור (עם קבוצת גיל בסוגריים) ולשורת המעביר שאחרי הפסיק
     const splitShiur = (label) => {
@@ -54,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .map((s) => {
           const { title, teacher } = splitShiur(s.label);
           const teacherHtml = teacher ? `<span class="teacher">${teacher}</span>` : "";
-          return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="time">${s.time}</span></li>`;
+          return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="time">${pad4(s.time)}</span></li>`;
         })
         .join("");
     });
@@ -70,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ul.innerHTML = sortRowsByTime(SCHEDULE_DATA.rows)
         .filter((r) => !r.hidden)
         .map((r) => r.time
-          ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+          ? `<li><span>${r.label}</span><span class="time">${pad4(r.time)}</span></li>`
           : `<li class="note-line"><span>${r.label}</span></li>`)
         .join("");
     });
@@ -88,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const items = sortRowsByTime(day.rows)
           .filter((r) => !r.hidden)
           .map((r) => r.time
-            ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+            ? `<li><span>${r.label}</span><span class="time">${pad4(r.time)}</span></li>`
             : `<li class="note-line"><span>${r.label}</span></li>`)
           .join("");
         return `<div class="col"><h4>${day.label}</h4><ul class="shabbat-list">${items}</ul></div>`;
@@ -112,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const items = KIPPUR_DATA.erevDay.rows
         .filter((r) => !r.hidden)
         .map((r) => r.time
-          ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+          ? `<li><span>${r.label}</span><span class="time">${pad4(r.time)}</span></li>`
           : `<li class="note-line"><span>${r.label}</span></li>`)
         .join("");
       container.innerHTML = `<div class="shabbat-cols" style="grid-template-columns:1fr;"><div class="col"><h4>${KIPPUR_DATA.erevDay.label}</h4><ul class="shabbat-list">${items}</ul></div></div>`;
@@ -124,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const items = col.rows
           .filter((r) => !r.hidden)
           .map((r) => r.time
-            ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+            ? `<li><span>${r.label}</span><span class="time">${pad4(r.time)}</span></li>`
             : `<li class="note-line"><span>${r.label}</span></li>`)
           .join("");
         return `<div class="col"><h4>${col.label}</h4><ul class="shabbat-list">${items}</ul></div>`;

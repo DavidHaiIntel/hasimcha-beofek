@@ -276,6 +276,12 @@ function formatTime(date) {
   });
 }
 
+// מוסיף אפס מוביל לשעה חד-ספרתית ("8:30" -> "08:30"), כדי שכל השעות יוצגו ב-4 ספרות
+function padTimeStr(s) {
+  const m = typeof s === "string" && s.match(/^(\d{1,2}):(\d{2})$/);
+  return m ? m[1].padStart(2, "0") + ":" + m[2] : s;
+}
+
 function formatGregorian(date) {
   return date.toLocaleDateString("he-IL", {
     timeZone: NETIVOT.timeZone,
@@ -557,7 +563,7 @@ function calcShabbatTimes(reference = new Date()) {
     new Date(fridaySun.sunset.getTime() - 18 * 60000), 5
   );
   const shirHashirim = new Date(minchaErev.getTime() - 10 * 60000);
-  const shacharit = isIsraelDST(saturday) ? "8:30" : "8:00";
+  const shacharit = isIsraelDST(saturday) ? "08:30" : "08:00";
   // מנחה של שבת: חצי שעה עגולה (00:/30:) לפחות 50 דק' לפני שקיעה - מעגלים כלפי מטה
   // מ-(שקיעה פחות 50) לחצי השעה. רצפה: לעולם לא לפני 16:00 (גם אם זה פחות מ-50 דק' לפני
   // השקיעה בשבתות החורף העמוקות שבהן השקיעה מוקדמת מאוד) - הרצפה של 16:00 גוברת.
@@ -599,8 +605,8 @@ function renderShabbatTimes() {
   const computed = shabbatComputedValues(t);
   const cfg = typeof SHABBAT_TIMES_CONFIG !== "undefined" ? SHABBAT_TIMES_CONFIG : null;
 
-  document.getElementById("candle-time").textContent = cfg?.candleLighting?.override || computed.candleLighting;
-  document.getElementById("shabbat-end-time").textContent = cfg?.shabbatEnds?.override || computed.shabbatEnds;
+  document.getElementById("candle-time").textContent = padTimeStr(cfg?.candleLighting?.override || computed.candleLighting);
+  document.getElementById("shabbat-end-time").textContent = padTimeStr(cfg?.shabbatEnds?.override || computed.shabbatEnds);
 
   const listEl = document.getElementById("shabbat-prayers-list");
   if (listEl && cfg) {
@@ -609,7 +615,7 @@ function renderShabbatTimes() {
     // סדר התצוגה הוא בדיוק סדר השורות כפי שהוגדר בניהול (js/shabbat-times-config.js).
     listEl.innerHTML = cfg.rows
       .filter((r) => !r.hidden)
-      .map((r) => ({ label: r.label, time: r.override || computed[r.key] || "" }))
+      .map((r) => ({ label: r.label, time: padTimeStr(r.override || computed[r.key] || "") }))
       .map((r) => `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`)
       .join("");
   }
@@ -630,8 +636,8 @@ function renderSimchatTorahTimes(idPrefix, reference = new Date()) {
   const cfg = typeof SHABBAT_TIMES_CONFIG !== "undefined" ? SHABBAT_TIMES_CONFIG : null;
   const stData = typeof SIMCHAT_TORAH_DATA !== "undefined" ? SIMCHAT_TORAH_DATA : null;
 
-  document.getElementById(idPrefix + "candle-time").textContent = cfg?.candleLighting?.override || computed.candleLighting;
-  document.getElementById(idPrefix + "shabbat-end-time").textContent = cfg?.shabbatEnds?.override || computed.shabbatEnds;
+  document.getElementById(idPrefix + "candle-time").textContent = padTimeStr(cfg?.candleLighting?.override || computed.candleLighting);
+  document.getElementById(idPrefix + "shabbat-end-time").textContent = padTimeStr(cfg?.shabbatEnds?.override || computed.shabbatEnds);
 
   const listEl = document.getElementById(idPrefix + "shabbat-prayers-list");
   if (listEl && cfg) {
@@ -645,7 +651,7 @@ function renderSimchatTorahTimes(idPrefix, reference = new Date()) {
     });
     listEl.innerHTML = items
       .map((r) => r.time
-        ? `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`
+        ? `<li><span>${r.label}</span><span class="time">${padTimeStr(r.time)}</span></li>`
         : `<li class="note-line"><span>${r.label}</span></li>`)
       .join("");
   }

@@ -69,6 +69,9 @@
   .tv-list li .shiur-text { display: flex; flex-direction: column; gap: .3vh; }
   .tv-list li .teacher { font-weight: 500; font-size: 2vh; color: var(--soft); }
   .tv-list li .tm { font-weight: 800; color: var(--navy); direction: ltr; font-size: 2.7vh; white-space: nowrap; }
+  /* לוז שבת - פונט מעט גדול יותר (קריא יותר למתפללים), בלי לשבור את האיזון */
+  #shabbat-prayers-list li { font-size: 2.9vh; padding: 1.15vh .6vw; }
+  #shabbat-prayers-list li .tm { font-size: 3.1vh; }
   .tv-list li .shiur-end { display: inline-flex; align-items: center; gap: .7vw; }
   .tv-list li .shiur-qr { height: 6vh; width: 6vh; border-radius: 4px; background: #fff; display: block; flex: none; }
   .tv-list li.note { justify-content: center; font-size: 1.8vh; font-style: italic; color: var(--soft); border-bottom: none; padding: .5vh 0; }
@@ -171,11 +174,11 @@
   <div class="addr">בית הכנסת "השמחה שבאופק"<br>רח' קטיף 36, נתיבות</div>
 </div>
 
-<script src="js/netz-data.js?v=33"></script>
-<script src="js/zmanim.js?v=33"></script>
-<script src="js/shabbat-times-config.js?v=33"></script>
-<script src="js/shiurim-data.js?v=33"></script>
-<script src="js/tv-data.js?v=33"></script>
+<script src="js/netz-data.js?v=34"></script>
+<script src="js/zmanim.js?v=34"></script>
+<script src="js/shabbat-times-config.js?v=34"></script>
+<script src="js/shiurim-data.js?v=34"></script>
+<script src="js/tv-data.js?v=34"></script>
 <script>
   // Service Worker (רשת-תחילה) - כדי שרענון ימשוך תמיד תוכן עדכני
   if ("serviceWorker" in navigator) {
@@ -239,12 +242,12 @@
     if (!t) return;
     const computed = shabbatComputedValues(t);
     const cfg = liveShabbatCfg;
-    document.getElementById("candle-time").textContent = (cfg && cfg.candleLighting.override) || computed.candleLighting;
-    document.getElementById("shabbat-end-time").textContent = (cfg && cfg.shabbatEnds.override) || computed.shabbatEnds;
+    document.getElementById("candle-time").textContent = padTimeStr((cfg && cfg.candleLighting.override) || computed.candleLighting);
+    document.getElementById("shabbat-end-time").textContent = padTimeStr((cfg && cfg.shabbatEnds.override) || computed.shabbatEnds);
     if (cfg) {
       document.getElementById("shabbat-prayers-list").innerHTML = cfg.rows
         .filter((r) => !r.hidden)
-        .map((r) => ({ label: r.label, time: r.override || computed[r.key] || "" }))
+        .map((r) => ({ label: r.label, time: padTimeStr(r.override || computed[r.key] || "") }))
         .map((r) => `<li><span class="lbl">${r.label}</span><span class="tm">${r.time}</span></li>`)
         .join("");
     }
@@ -270,7 +273,7 @@
           title = base + group;
         }
         const teacherHtml = teacher ? `<span class="teacher">${teacher}</span>` : "";
-        return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="shiur-end"><span class="tm">${s.time || ""}</span>${qr}</span></li>`;
+        return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="shiur-end"><span class="tm">${padTimeStr(s.time || "")}</span>${qr}</span></li>`;
       })
       .join("");
   }

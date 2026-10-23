@@ -64,6 +64,11 @@ function getRows(containerId) {
 function buildListHtml(id, rows) {
   const items = rows
     .map((r) => {
+      // שורה בלי שעה = שורת הערה (note-line) - נשמרת כמות ולא נמחקת בעריכה
+      if (!r.time) {
+        const hiddenNote = r.hidden ? ' style="display:none" data-hidden="true"' : "";
+        return `              <li class="note-line"${hiddenNote}><span>${r.label}</span></li>`;
+      }
       const hiddenAttr = r.hidden ? ' style="display:none" data-hidden="true"' : "";
       return `              <li${hiddenAttr}><span>${r.label}</span><span class="time">${r.time}</span></li>`;
     })
@@ -75,11 +80,20 @@ function parseListFromHtml(html, id) {
   const re = new RegExp(`<ul class="shabbat-list" id="${id}">([\\s\\S]*?)</ul>`);
   const match = html.match(re);
   if (!match) return [];
-  const liRe = /<li([^>]*)><span>([\s\S]*?)<\/span><span class="time"[^>]*>([\s\S]*?)<\/span><\/li>/g;
+  // קולט גם שורות רגילות (עם שעה) וגם שורות הערה (note-line בלי שעה)
+  const liRe = /<li([^>]*)>([\s\S]*?)<\/li>/g;
   const rows = [];
   let m;
   while ((m = liRe.exec(match[1])) !== null) {
-    rows.push({ label: m[2].trim(), time: m[3].trim(), hidden: /data-hidden="true"/.test(m[1]) });
+    const attrs = m[1];
+    const inner = m[2];
+    const labelMatch = inner.match(/<span>([\s\S]*?)<\/span>/);
+    const timeMatch = inner.match(/<span class="time"[^>]*>([\s\S]*?)<\/span>/);
+    rows.push({
+      label: labelMatch ? labelMatch[1].trim() : "",
+      time: timeMatch ? timeMatch[1].trim() : "",
+      hidden: /data-hidden="true"/.test(attrs),
+    });
   }
   return rows;
 }

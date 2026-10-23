@@ -185,7 +185,15 @@ function getShulZmanim(date) {
 // מחדש מהניהול מתבנית גנרית, וזמן קבוע היה נשאר תקוע/משתבש ככל שהעונה מתקדמת).
 // reference - ברירת המחדל "היום" מתאימה ללוח השבת הרגיל (תמיד נצפה קרוב לשבוע הרלוונטי),
 // אבל לעמודי חג עתידיים (כמו שמחת תורה) יש להעביר את התאריך הנכון של אותו שבוע במפורש.
-function renderVatikinTime(reference = new Date()) {
+function renderVatikinTime(reference) {
+  // ברירת מחדל: יום ראשון של השבוע שאחרי השבת המוצגת - כך זמן הוותיקין בדף השבת מתייחס
+  // לימי החול הקרובים, כולל התאמה אוטומטית למעבר שעון קיץ/חורף שחל במוצ"ש (שאחרת היה
+  // מציג את שעת הקיץ של "היום" במקום את שעת החורף שתחול בפועל בשבוע הקרוב).
+  if (!reference) {
+    const { saturday } = getShabbatDates(new Date());
+    reference = new Date(saturday);
+    reference.setDate(reference.getDate() + 1);
+  }
   const { tefila } = getShulZmanim(reference);
   if (!tefila) return;
   const text = formatTime(tefila);

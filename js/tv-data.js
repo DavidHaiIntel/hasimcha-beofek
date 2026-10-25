@@ -3,5 +3,5 @@
    holidayPromo = פרסום/ברכת חג (ריק = לא מוצג). מוצג בולט יותר מהודעה רגילה. */
 const TV_DATA = {
   announcement: "",
-  holidayPromo: "מזל טוב למשפחת פטמן לרגל שבת החתן!",
+  holidayPromo: "",
 };

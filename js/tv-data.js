@@ -2,6 +2,6 @@
    announcement = הודעה ניהולית כללית (ריק = לא מוצג).
    holidayPromo = פרסום/ברכת חג (ריק = לא מוצג). מוצג בולט יותר מהודעה רגילה. */
 const TV_DATA = {
-  announcement: "",
+  announcement: "ביום שני הקרוב מתחילים ללמוד את ספר דניאל. \nמוזמנים בשמחה!",
   holidayPromo: "",
 };

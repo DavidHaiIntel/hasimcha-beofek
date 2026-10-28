@@ -55,7 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
         .map((s) => {
           const { title, teacher } = splitShiur(s.label);
           const teacherHtml = teacher ? `<span class="teacher">${teacher}</span>` : "";
-          return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="time">${pad4(s.time)}</span></li>`;
+          // חבורת שבת צמודה לתפילה - חצי שעה לפני שחרית (משתנה לפי שעון קיץ/חורף)
+          const t = (typeof shabbatChaburaTime === "function" && s.label.includes("צדקת הצדיק")) ? shabbatChaburaTime() : pad4(s.time);
+          return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="time">${t}</span></li>`;
         })
         .join("");
     });

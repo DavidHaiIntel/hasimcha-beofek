@@ -550,6 +550,12 @@ function getHalachicToday(reference = new Date()) {
   return today;
 }
 
+// זמן החבורה בשבת: חצי שעה לפני שחרית (שחרית 08:30 בקיץ / 08:00 בחורף) => 08:00 / 07:30
+function shabbatChaburaTime() {
+  const { saturday } = getShabbatDates(new Date());
+  return isIsraelDST(saturday) ? "08:00" : "07:30";
+}
+
 function calcShabbatTimes(reference = new Date()) {
   const { friday, saturday } = getShabbatDates(reference);
   const fridaySun = calcSunTimes(

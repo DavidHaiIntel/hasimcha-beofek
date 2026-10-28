@@ -80,6 +80,9 @@
   #shiurim-list-tv li .tm { font-size: 2.2vh; }
   #shiurim-list-tv li .shiur-qr { height: 4.8vh; width: 4.8vh; }
   .tv-list li.note { justify-content: center; font-size: 1.8vh; font-style: italic; color: var(--soft); border-bottom: none; padding: .5vh 0; }
+  /* שיעור היום בתוך "תפילות ימי חול" - מודגש כדי שיבלוט כשיעור ולא כתפילה */
+  .tv-list li.today-shiur .lbl { color: var(--teal); font-weight: 700; }
+  .tv-list li.today-shiur .tm { color: var(--teal); }
   /* ---- כותרת שבת + כניסה/יציאה ---- */
   .shabbat-head { text-align: center; margin-bottom: 1.1vh; }
   .shabbat-head .parasha { font-size: 3vh; font-weight: 800; color: var(--navy); }
@@ -179,11 +182,11 @@
   <div class="addr">בית הכנסת "השמחה שבאופק"<br>רח' קטיף 36, נתיבות</div>
 </div>
 
-<script src="js/netz-data.js?v=38"></script>
-<script src="js/zmanim.js?v=38"></script>
-<script src="js/shabbat-times-config.js?v=38"></script>
-<script src="js/shiurim-data.js?v=38"></script>
-<script src="js/tv-data.js?v=38"></script>
+<script src="js/netz-data.js?v=39"></script>
+<script src="js/zmanim.js?v=39"></script>
+<script src="js/shabbat-times-config.js?v=39"></script>
+<script src="js/shiurim-data.js?v=39"></script>
+<script src="js/tv-data.js?v=39"></script>
 <script>
   // Service Worker (רשת-תחילה) - כדי שרענון ימשוך תמיד תוכן עדכני
   if ("serviceWorker" in navigator) {
@@ -258,6 +261,21 @@
     }
   }
 
+  // פיצול תווית שיעור לשם (עם קבוצת גיל כסיומת אחרי מקף) ולשם המעביר (אחרי פסיק)
+  function splitShiur(label) {
+    const groupMatch = label.match(/\s*\(([^)]*)\)\s*$/);
+    const group = groupMatch ? " - " + groupMatch[1].trim() : "";
+    const base = groupMatch ? label.slice(0, groupMatch.index).trim() : label;
+    const ci = base.lastIndexOf(",");
+    if (ci === -1) return { title: base + group, teacher: "" };
+    return { title: base.slice(0, ci).trim() + group, teacher: base.slice(ci + 1).trim() };
+  }
+  // זמן השיעור - חבורת שבת צמודה לתפילה (חצי שעה לפני שחרית, משתנה לפי שעון קיץ/חורף)
+  function shiurTime(s) {
+    if (typeof shabbatChaburaTime === "function" && s.label.includes("צדקת הצדיק")) return shabbatChaburaTime();
+    return padTimeStr(s.time || "");
+  }
+
   function renderShiurim() {
     document.getElementById("shiurim-list-tv").innerHTML = (liveShiurim || [])
       .filter((s) => !s.hidden)
@@ -265,22 +283,36 @@
         const qr = s.link
           ? `<img class="shiur-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(s.link)}" alt="QR">`
           : "";
-        // פיצול התווית לשם השיעור (עם קבוצת גיל כסיומת אחרי מקף) ומתחתיו שם המעביר, אם צוין אחרי פסיק.
-        let title = s.label, teacher = "";
-        const groupMatch = s.label.match(/\s*\(([^)]*)\)\s*$/);
-        const group = groupMatch ? " - " + groupMatch[1].trim() : "";
-        const base = groupMatch ? s.label.slice(0, groupMatch.index).trim() : s.label;
-        const ci = base.lastIndexOf(",");
-        if (ci !== -1) {
-          title = base.slice(0, ci).trim() + group;
-          teacher = base.slice(ci + 1).trim();
-        } else {
-          title = base + group;
-        }
+        const { title, teacher } = splitShiur(s.label);
         const teacherHtml = teacher ? `<span class="teacher">${teacher}</span>` : "";
-        return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="shiur-end"><span class="tm">${padTimeStr(s.time || "")}</span>${qr}</span></li>`;
+        return `<li><span class="shiur-text"><span class="lbl">${title}</span>${teacherHtml}</span><span class="shiur-end"><span class="tm">${shiurTime(s)}</span>${qr}</span></li>`;
       })
       .join("");
+  }
+
+  // מזריק לרשימת "תפילות ימי חול" את השיעור של היום (לפי יום בשבוע בשעון ישראל - מתחלף בחצות,
+  // שלא כמו הוותיקין/זמני היום שמתחלפים בצאת הכוכבים). ממוקם לפני "ערבית" אם לפניה, אחריה אם אחריה.
+  function renderTodayShiur() {
+    const list = document.getElementById("weekday-list-tv");
+    if (!list || !liveShiurim) return;
+    list.querySelectorAll("li.today-shiur").forEach((el) => el.remove());
+    const dayShort = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Jerusalem", weekday: "short" }).format(new Date());
+    const dayName = { Sun: "ראשון", Mon: "שני", Tue: "שלישי", Wed: "רביעי", Thu: "חמישי", Fri: "שישי", Sat: "שבת" }[dayShort];
+    const todays = liveShiurim.filter((s) => !s.hidden && s.label.startsWith(dayName));
+    if (!todays.length) return;
+    const arvitLi = Array.from(list.querySelectorAll("li")).find((li) => (li.textContent || "").includes("ערבית"));
+    todays.forEach((s) => {
+      const rest = s.label.replace(/^\S+\s*-\s*/, "");
+      const { title, teacher } = splitShiur(rest);
+      const t = shiurTime(s);
+      const li = document.createElement("li");
+      li.className = "today-shiur";
+      li.innerHTML = `<span class="lbl">📖 ${title}${teacher ? " · " + teacher : ""}</span><span class="tm">${t || ""}</span>`;
+      const mins = /^(\d{1,2}):(\d{2})$/.test(t) ? (+t.split(":")[0]) * 60 + (+t.split(":")[1]) : 0;
+      if (arvitLi && mins >= 21 * 60) arvitLi.after(li);
+      else if (arvitLi) list.insertBefore(li, arvitLi);
+      else list.appendChild(li);
+    });
   }
 
   function renderNotices() {
@@ -311,6 +343,7 @@
             : `<li><span class="lbl">${lbl}</span><span class="tm">${tm}</span></li>`;
         });
       document.getElementById("weekday-list-tv").innerHTML = items.join("");
+      renderTodayShiur();
     } catch (e) { /* נשאר ריק אם אין רשת */ }
   }
 
@@ -334,7 +367,7 @@
     renderShabbat(); renderShiurim(); renderNotices();
   }
 
-  function renderLive() { renderDates(); renderToday(); renderShabbat(); }
+  function renderLive() { renderDates(); renderToday(); renderShabbat(); renderTodayShiur(); }
 
   // מחליף את חיווי העדכון האוטומטי בחיווי "לא מחובר" כשאין אינטרנט.
   // navigator.onLine לא אמין במחשב (נשאר true גם כש-WiFi כבוי), לכן בודקים בפועל ע"י טעינת תמונה קטנה.

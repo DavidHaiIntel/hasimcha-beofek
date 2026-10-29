@@ -200,14 +200,14 @@
   </div>
 </footer>
 
-<script src="js/netz-data.js?v=39"></script>
-<script src="js/zmanim.js?v=39"></script>
-<script src="js/site-config.js?v=39"></script>
-<script src="js/shiurim-data.js?v=39"></script>
-<script src="js/rosh-hashana-data.js?v=39"></script>
-<script src="js/shabbat-times-config.js?v=39"></script>
-<script src="js/simchat-torah-config.js?v=39"></script>
-<script src="js/common.js?v=39"></script>
+<script src="js/netz-data.js?v=40"></script>
+<script src="js/zmanim.js?v=40"></script>
+<script src="js/site-config.js?v=40"></script>
+<script src="js/shiurim-data.js?v=40"></script>
+<script src="js/rosh-hashana-data.js?v=40"></script>
+<script src="js/shabbat-times-config.js?v=40"></script>
+<script src="js/simchat-torah-config.js?v=40"></script>
+<script src="js/common.js?v=40"></script>
 <script>
   document.getElementById("print-shabbat-btn").addEventListener("click", () => window.print());
 
@@ -227,6 +227,8 @@
       document.getElementById("simchat-torah-poster").style.display = "";
       document.getElementById("st-title").textContent = (typeof SIMCHAT_TORAH_DATA !== "undefined" && SIMCHAT_TORAH_DATA.title) || "שמחת תורה";
       document.getElementById("st-weekday-list").innerHTML = document.getElementById("weekday-list").innerHTML;
+      // שורות הערה (כמו "מניין שחרית נוסף בשישי") לא רלוונטיות בשמחת תורה - מסירים מהעותק
+      document.querySelectorAll("#st-weekday-list .note-line").forEach((el) => el.remove());
       renderSimchatTorahTimes("st-", saturday);
       document.addEventListener("DOMContentLoaded", () => renderVatikinTime(saturday));
     }

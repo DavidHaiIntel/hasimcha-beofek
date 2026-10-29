@@ -917,10 +917,11 @@ async function saveToGithub() {
     );
 
     // מעדכן גם את עותק "תפילות ימי חול" בדף שמחת תורה הייעודי, כדי שיישאר מסונכרן
+    // (ללא שורות הערה כמו "מניין שחרית נוסף בשישי" - לא רלוונטיות בשמחת תורה)
     await saveFileToGithub(
       "simchat-torah.html",
       (currentHtml) => {
-        const newWeekdayList = buildListHtml("st-weekday-list", getRows("weekday-rows"));
+        const newWeekdayList = buildListHtml("st-weekday-list", getRows("weekday-rows").filter((r) => r.time));
         return currentHtml.replace(/<ul class="shabbat-list" id="st-weekday-list">[\s\S]*?<\/ul>/, newWeekdayList);
       },
       `עדכון תפילות ימי חול בדף שמחת תורה`,

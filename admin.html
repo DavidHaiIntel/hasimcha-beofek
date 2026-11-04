@@ -258,6 +258,16 @@
             <label for="tv-announcement">הודעה ניהולית כללית</label>
             <textarea id="tv-announcement" rows="2" style="width:100%; padding:10px 12px; border:1px solid #d5dee2; border-radius:8px; font-family:inherit; box-sizing:border-box;" placeholder="לדוגמה: שיעור מיוחד ביום רביעי בשעה 20:00"></textarea>
           </div>
+          <div class="admin-field">
+            <label for="tv-event-image">פוסטר אירוע (מוקפץ מלא-מסך לסירוגין)</label>
+            <input type="text" id="tv-event-image" style="width:100%; padding:10px 12px; border:1px solid #d5dee2; border-radius:8px; font-family:inherit; box-sizing:border-box;" placeholder="images/rav-israel-event.jpg (השאירו ריק כדי לא להציג)">
+            <div class="admin-help">נתיב לתמונת פוסטר (אנכית) שתוקפץ על כל המסך כל כ-90 שניות. אחרי האירוע - מחקו את הטקסט כדי להסירו.</div>
+          </div>
+          <div class="admin-field">
+            <label for="tv-event-until">הפסקת הפרסום אוטומטית בתאריך+שעה</label>
+            <input type="datetime-local" id="tv-event-until" style="width:100%; padding:10px 12px; border:1px solid #d5dee2; border-radius:8px; font-family:inherit; box-sizing:border-box;">
+            <div class="admin-help">לאחר מועד זה פוסטר האירוע יפסיק להופיע אוטומטית. השאירו ריק = ללא הגבלה.</div>
+          </div>
         </details>
 
         <div id="schedule-pages-container"></div>
@@ -287,8 +297,8 @@
   </div>
 </footer>
 
-<script src="js/site-config.js?v=40"></script>
-<script src="js/common.js?v=40"></script>
-<script src="js/admin.js?v=40"></script>
+<script src="js/site-config.js?v=41"></script>
+<script src="js/common.js?v=41"></script>
+<script src="js/admin.js?v=41"></script>
 </body>
 </html>

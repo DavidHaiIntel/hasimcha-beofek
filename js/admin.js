@@ -516,23 +516,27 @@ async function fetchLiveTvDataJs() {
 
 function parseTvDataJs(jsText) {
   const match = jsText.match(/TV_DATA\s*=\s*(\{[\s\S]*?\n\});/);
-  if (!match) return { announcement: "", holidayPromo: "" };
+  if (!match) return { announcement: "", holidayPromo: "", eventImage: "", eventUntil: "" };
   try {
     // eslint-disable-next-line no-new-func
     return Function(`"use strict"; return (${match[1]});`)();
   } catch (e) {
-    return { announcement: "", holidayPromo: "" };
+    return { announcement: "", holidayPromo: "", eventImage: "", eventUntil: "" };
   }
 }
 
-function buildTvDataJs(announcement, holidayPromo) {
+function buildTvDataJs(announcement, holidayPromo, eventImage, eventUntil) {
   const esc = (s) => s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
   return `/* ===== נתונים לדף התצוגה בטלוויזיה (tv.html) - נערך מעמוד הניהול (admin.html) =====
    announcement = הודעה ניהולית כללית (ריק = לא מוצג).
-   holidayPromo = פרסום/ברכת חג (ריק = לא מוצג). מוצג בולט יותר מהודעה רגילה. */
+   holidayPromo = פרסום/ברכת חג (ריק = לא מוצג). מוצג בולט יותר מהודעה רגילה.
+   eventImage = נתיב/קישור לפוסטר אירוע שמוקפץ מלא-מסך לסירוגין (ריק = לא מוצג).
+   eventUntil = תאריך+שעה שבהם הפרסום נפסק אוטומטית (ISO, שעון ישראל). ריק = ללא הגבלה. */
 const TV_DATA = {
   announcement: "${esc(announcement)}",
   holidayPromo: "${esc(holidayPromo)}",
+  eventImage: "${esc(eventImage)}",
+  eventUntil: "${esc(eventUntil)}",
 };
 `;
 }
@@ -880,6 +884,10 @@ async function loadIntoForm() {
   const tvData = parseTvDataJs(tvJs);
   document.getElementById("tv-announcement").value = tvData.announcement || "";
   document.getElementById("tv-holiday-promo").value = tvData.holidayPromo || "";
+  const tvEventEl = document.getElementById("tv-event-image");
+  if (tvEventEl) tvEventEl.value = tvData.eventImage || "";
+  const tvUntilEl = document.getElementById("tv-event-until");
+  if (tvUntilEl) tvUntilEl.value = tvData.eventUntil || "";
 
   const configJs = await fetchLiveSiteConfigJs();
   const extraPages = parseExtraPagesFromJs(configJs);
@@ -997,7 +1005,9 @@ async function saveToGithub() {
       "js/tv-data.js",
       () => buildTvDataJs(
         document.getElementById("tv-announcement").value.trim(),
-        document.getElementById("tv-holiday-promo").value.trim()
+        document.getElementById("tv-holiday-promo").value.trim(),
+        (document.getElementById("tv-event-image")?.value || "").trim(),
+        (document.getElementById("tv-event-until")?.value || "").trim()
       ),
       `עדכון הודעות לדף התצוגה`,
       token

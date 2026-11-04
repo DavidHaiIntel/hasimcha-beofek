@@ -116,6 +116,13 @@
   .qr-item img { height: 8vh; width: 8vh; background: #fff; border-radius: 8px; padding: .3vh; display: block; margin: 0 auto; }
   .qr-item .cap { font-size: 1.6vh; font-weight: 700; margin-top: .3vh; }
   .tv-qr-bar .addr { grid-column: 3; font-size: 1.8vh; opacity: .85; text-align: left; }
+  /* ===== פוסטר אירוע - הקפצה מלא-מסך לסירוגין ===== */
+  .event-overlay {
+    position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+    background: rgba(12, 20, 38, .96); opacity: 0; visibility: hidden; transition: opacity .6s ease;
+  }
+  .event-overlay.show { opacity: 1; visibility: visible; }
+  .event-overlay img { max-height: 94vh; max-width: 94vw; border-radius: 14px; box-shadow: 0 10px 50px rgba(0,0,0,.5); }
 </style>
 </head>
 <body>
@@ -182,11 +189,14 @@
   <div class="addr">בית הכנסת "השמחה שבאופק"<br>רח' קטיף 36, נתיבות</div>
 </div>
 
-<script src="js/netz-data.js?v=40"></script>
-<script src="js/zmanim.js?v=40"></script>
-<script src="js/shabbat-times-config.js?v=40"></script>
-<script src="js/shiurim-data.js?v=40"></script>
-<script src="js/tv-data.js?v=40"></script>
+<!-- פוסטר אירוע - מוקפץ מלא-מסך לסירוגין (נשלט מ-TV_DATA.eventImage) -->
+<div class="event-overlay" id="event-overlay"><img id="event-img" alt="פוסטר אירוע"></div>
+
+<script src="js/netz-data.js?v=41"></script>
+<script src="js/zmanim.js?v=41"></script>
+<script src="js/shabbat-times-config.js?v=41"></script>
+<script src="js/shiurim-data.js?v=41"></script>
+<script src="js/tv-data.js?v=41"></script>
 <script>
   // Service Worker (רשת-תחילה) - כדי שרענון ימשוך תמיד תוכן עדכני
   if ("serviceWorker" in navigator) {
@@ -364,10 +374,42 @@
     if (tv) liveTvData = tv;
     await renderWeekday();
     if (typeof renderParashaName === "function") renderParashaName();
-    renderShabbat(); renderShiurim(); renderNotices();
+    renderShabbat(); renderShiurim(); renderNotices(); applyEventOverlay();
   }
 
-  function renderLive() { renderDates(); renderToday(); renderShabbat(); renderTodayShiur(); }
+  function renderLive() { renderDates(); renderToday(); renderShabbat(); renderTodayShiur(); applyEventOverlay(); }
+
+  // ===== פוסטר אירוע - הקפצה מלא-מסך לסירוגין, עם הפסקה אוטומטית ב-eventUntil =====
+  let eventCycle = null, eventHide = null, eventInit = null, currentEventKey = null;
+  function eventExpired() {
+    const until = (liveTvData && liveTvData.eventUntil || "").trim();
+    if (!until) return false;
+    const t = new Date(until).getTime();
+    return !isNaN(t) && Date.now() > t;
+  }
+  function applyEventOverlay() {
+    const overlay = document.getElementById("event-overlay");
+    const img = document.getElementById("event-img");
+    if (!overlay) return;
+    const src = (liveTvData && liveTvData.eventImage || "").trim();
+    const active = src && !eventExpired();
+    const key = active ? src : "";
+    if (key === currentEventKey) return; // ללא שינוי - לא מאתחלים מחדש
+    currentEventKey = key;
+    if (eventCycle) clearInterval(eventCycle);
+    if (eventHide) clearTimeout(eventHide);
+    if (eventInit) clearTimeout(eventInit);
+    overlay.classList.remove("show");
+    if (!active) { img.removeAttribute("src"); return; }
+    img.src = src;
+    const show = () => {
+      if (eventExpired()) { applyEventOverlay(); return; }
+      overlay.classList.add("show");
+      eventHide = setTimeout(() => overlay.classList.remove("show"), 18000); // מוצג 18 שניות
+    };
+    eventInit = setTimeout(show, 8000);          // הצגה ראשונה אחרי שהלוח נטען
+    eventCycle = setInterval(show, 90000);       // חוזר כל 90 שניות
+  }
 
   // מחליף את חיווי העדכון האוטומטי בחיווי "לא מחובר" כשאין אינטרנט.
   // navigator.onLine לא אמין במחשב (נשאר true גם כש-WiFi כבוי), לכן בודקים בפועל ע"י טעינת תמונה קטנה.
@@ -395,6 +437,7 @@
   renderClock(); renderLive(); renderShiurim(); renderNotices();
   refreshContent();
   updateOnlineStatus();
+  applyEventOverlay();
 
   setInterval(renderClock, 1000);                      // שעון חי - בלי רשת
   setInterval(renderLive, 60 * 1000);                  // חישוב מחדש כל דקה (מעבר יום/שבת) - בלי רשת

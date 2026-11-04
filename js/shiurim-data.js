@@ -7,6 +7,6 @@ const SHIURIM_LIST = [
   { label: "שלישי - אמונה וביטחון, אריאל מכבי", time: "20:00", hidden: false, link: "https://chat.whatsapp.com/JRsVN5wdlhkBIfd2FDCEnX" },
   { label: "רביעי - שיעור בכתבי הרב קוק, הרב אסף ברלינר", time: "21:15", hidden: false, link: "https://chat.whatsapp.com/JBFs773O8Q8JNwJCioz3Xq" },
   { label: "חמישי - שיעור כוזרי לנוער, ירון יאראק", time: "20:00", hidden: false, link: "https://chat.whatsapp.com/KVDPOlkBoOuJPkCGfbRrwl" },
-  { label: "שישי - שיעור גמרא לנוער במסכת בבא קמא, הרב אריאל ברלין (לאחר שחרית)", time: "", hidden: false, link: "https://chat.whatsapp.com/KVDPOlkBoOuJPkCGfbRrwl" },
+  { label: "שישי - גמרא לנוער - מסכת בבא קמא, הרב אריאל ברלין", time: "9:15", hidden: false, link: "https://chat.whatsapp.com/KVDPOlkBoOuJPkCGfbRrwl" },
   { label: "שבת - חבורה בצדקת הצדיק", time: "8:00", hidden: false },
 ];

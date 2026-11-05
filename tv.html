@@ -122,7 +122,8 @@
     background: rgba(12, 20, 38, .96); opacity: 0; visibility: hidden; transition: opacity .6s ease;
   }
   .event-overlay.show { opacity: 1; visibility: visible; }
-  .event-overlay img { max-height: 94vh; max-width: 94vw; border-radius: 14px; box-shadow: 0 10px 50px rgba(0,0,0,.5); }
+  /* width+height מגדירים תיבה מלאה-מסך ו-object-fit:contain מגדיל את התמונה למקסימום תוך שמירת יחס (גם אם קובץ המקור קטן) */
+  .event-overlay img { width: 96vw; height: 96vh; object-fit: contain; border-radius: 14px; box-shadow: 0 10px 50px rgba(0,0,0,.5); }
 </style>
 </head>
 <body>

@@ -8,7 +8,7 @@ const SHABBAT_TIMES_CONFIG = {
   candleLighting: { override: "" },
   shabbatEnds: { override: "" },
   rows: [
-    { key: "shirHashirim", label: "שיר השירים", override: "", hidden: false },
+    { key: "shirHashirim", label: "שיר השירים", override: "", hidden: true },
     { key: "minchaErev", label: "תפילת מנחה, קבלת שבת וערבית", override: "", hidden: false },
     { key: "shacharit", label: "שחרית של שבת", override: "", hidden: false },
     { key: "", label: "דרשת שבת שובה - הרב דוד אסולין", override: "10:30", hidden: true },

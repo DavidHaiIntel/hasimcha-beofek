@@ -192,11 +192,11 @@
 <!-- פוסטר אירוע - מוקפץ מלא-מסך לסירוגין (נשלט מ-TV_DATA.eventImage) -->
 <div class="event-overlay" id="event-overlay"><img id="event-img" alt="פוסטר אירוע"></div>
 
-<script src="js/netz-data.js?v=41"></script>
-<script src="js/zmanim.js?v=41"></script>
-<script src="js/shabbat-times-config.js?v=41"></script>
-<script src="js/shiurim-data.js?v=41"></script>
-<script src="js/tv-data.js?v=41"></script>
+<script src="js/netz-data.js?v=42"></script>
+<script src="js/zmanim.js?v=42"></script>
+<script src="js/shabbat-times-config.js?v=42"></script>
+<script src="js/shiurim-data.js?v=42"></script>
+<script src="js/tv-data.js?v=42"></script>
 <script>
   // Service Worker (רשת-תחילה) - כדי שרענון ימשוך תמיד תוכן עדכני
   if ("serviceWorker" in navigator) {
@@ -264,7 +264,7 @@
     document.getElementById("shabbat-end-time").textContent = padTimeStr((cfg && cfg.shabbatEnds.override) || computed.shabbatEnds);
     if (cfg) {
       document.getElementById("shabbat-prayers-list").innerHTML = cfg.rows
-        .filter((r) => !r.hidden)
+        .filter((r) => shabbatRowVisible(r))
         .map((r) => ({ label: r.label, time: padTimeStr(r.override || computed[r.key] || "") }))
         .map((r) => `<li><span class="lbl">${r.label}</span><span class="tm">${r.time}</span></li>`)
         .join("");

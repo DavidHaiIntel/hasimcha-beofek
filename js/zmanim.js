@@ -609,6 +609,14 @@ function shabbatComputedValues(t) {
   };
 }
 
+// שיר השירים נאמר לפני תפילת מנחה רק בשעון קיץ; בשעון חורף הוא נאמר אחרי מנחה, ולכן
+// מוסתר אוטומטית מהלוז בחורף (גם אם לא הוסתר ידנית בניהול).
+function shabbatRowVisible(row, reference = new Date()) {
+  if (row.hidden) return false;
+  if (row.key === "shirHashirim") return isIsraelDST(getShabbatDates(reference).saturday);
+  return true;
+}
+
 function renderShabbatTimes() {
   const el = document.getElementById("candle-time");
   if (!el) return; // לא בעמוד שבת
@@ -628,7 +636,7 @@ function renderShabbatTimes() {
     // גולמי היה מעביר את "שחרית" (בוקר) לפני "מנחה, קבלת שבת" (ערב הקודם) בטעות.
     // סדר התצוגה הוא בדיוק סדר השורות כפי שהוגדר בניהול (js/shabbat-times-config.js).
     listEl.innerHTML = cfg.rows
-      .filter((r) => !r.hidden)
+      .filter((r) => shabbatRowVisible(r))
       .map((r) => ({ label: r.label, time: padTimeStr(r.override || computed[r.key] || "") }))
       .map((r) => `<li><span>${r.label}</span><span class="time">${r.time}</span></li>`)
       .join("");
@@ -656,7 +664,7 @@ function renderSimchatTorahTimes(idPrefix, reference = new Date()) {
   const listEl = document.getElementById(idPrefix + "shabbat-prayers-list");
   if (listEl && cfg) {
     const items = [];
-    cfg.rows.filter((r) => !r.hidden).forEach((r) => {
+    cfg.rows.filter((r) => shabbatRowVisible(r, reference)).forEach((r) => {
       if (r.key === "shacharit" && stData) {
         stData.shacharitRows.filter((sr) => !sr.hidden).forEach((sr) => items.push({ label: sr.label, time: sr.time }));
       } else {

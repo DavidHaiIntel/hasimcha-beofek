@@ -9,7 +9,7 @@
 
    עדכון ה-Service Worker עצמו: skipWaiting + clients.claim מחילים גרסה חדשה מיד,
    בלי צורך לסגור את כל הכרטיסיות. */
-const CACHE = "ohev-cache-v2";
+const CACHE = "ohev-cache-v3";
 
 self.addEventListener("install", () => {
   self.skipWaiting();

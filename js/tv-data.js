@@ -4,7 +4,7 @@
    eventImage = נתיב/קישור לפוסטר אירוע שמוקפץ מלא-מסך לסירוגין (ריק = לא מוצג).
    eventUntil = תאריך+שעה שבהם הפרסום נפסק אוטומטית (ISO, שעון ישראל). ריק = ללא הגבלה. */
 const TV_DATA = {
-  announcement: "השיעור של הרב אסולין חוזר ביום שני הקרוב!\nמוזמנים בשמחה!",
+  announcement: "",
   holidayPromo: "",
   eventImage: "images/rav-israel-event.jpg",
   eventUntil: "2026-11-14T23:00",
